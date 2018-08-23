@@ -1,5 +1,6 @@
 #/bin/bash
 
+# Compiles and executes the problem code
 function execut()
 {
 	arquivo=$1
@@ -28,7 +29,12 @@ function execut()
 	fi
 }
 
+# Main loop: look for new jobs every 1 sec
 while :; do
+
+	sleep 1
+
+	# if there are new jobs
 	if [ `ls Jobs/ | wc -l` > 0 ]
 	then
 		path=`ls Jobs/ | head -1`
