@@ -35,11 +35,11 @@ while :; do
 	sleep 1
 
 	# if there are new jobs
-	if [ `ls Jobs/ | wc -l` > 0 ]
+	if [ `ls JOBS/ | wc -l` > 0 ]
 	then
-		path=`ls Jobs/ | head -1`
+		path=`ls JOBS/ | head -1`
 		ext=`echo $path | cut -d. -f2`
-		mv -r Jobs/$path doing/
+		mv -r JOBS/$path doing/
 		for i in $(ls in.*);
 		do
 			execut $i
