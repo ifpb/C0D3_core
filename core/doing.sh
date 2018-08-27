@@ -15,6 +15,17 @@
 # Job directory. For each comparing process done, it creates a file
 # with the differences between these output files.
 #
+# This runnable file creates judge files with the number code and the
+# description related to this number according to the result got from
+# the analysis of the diff files, for example, if the diff file
+# related to the first input file got nothing on it, then it means
+# the execution of the code is correct to that test case, which means
+# the answer is right and the test case was accepted. In this case the
+# judge file related to this test case receives the content "0 ACCEPTED"
+# in case that diff file has something on it, it means it got wrong
+# answer to that test case, then the judge file receives the content
+# "1 WRONG ANSWER".
+#
 # All the generated files above are created within the 'result'
 # directory.
 #
@@ -30,9 +41,9 @@ DEBUG=1
 # Compiles the problem code
 function compile()
 {
-	path=$1
+	pathc=$1
 	old_dir=$(pwd)
-	cd DOING/$path
+	cd DOING/$pathc
 
 	# find the code_file on the folder
 	code_to_be_judged=( $(ls | grep *.c) )
@@ -49,22 +60,38 @@ function compile()
 function differ()
 {
 	arquivo=$1
-	path=$2
+	pathd=$2
 	ext=`echo ${arquivo} | cut -d. -f2`
 
-	[ $DEBUG -eq 1 ] && echo "Diff phase between: ${path}/out.${ext} and ${path}/result/stdout.${ext}"
+	[ $DEBUG -eq 1 ] && echo "Diff phase between: ${pathd}/out.${ext} and ${pathd}/result/stdout.${ext}"
 
-	diff DOING/${path}/out.${ext} DOING/${path}/result/stdout.${ext} > DOING/${path}/result/diff.${ext}
+	diff DOING/${pathd}/out.${ext} DOING/${pathd}/result/stdout.${ext} > DOING/${pathd}/result/diff.${ext}
+}
+
+function judge()
+{
+	arquivo=$1
+	pathj=$2
+	cd DOING
+
+	ext=`echo ${arquivo} | cut -d. -f2`
+	if [ `cat $pathj/result/diff.$ext | wc -l` -gt 0 ]
+	then
+		echo "1 WRONG ANSWER" > $pathj/result/judge.$ext
+	else
+		echo "0 ACCEPTED" > $pathj/result/judge.$ext
+	fi
+	cd ..
 }
 
 function execut()
 {
 	arquivo=$1
-	path=$2
+	pathe=$2
 	old_dir=$(pwd)
 
 	ext=`echo ${arquivo} | cut -d. -f2`
-	cd DOING/$path
+	cd DOING/$pathe
 
 	[ $DEBUG -eq 1 ] && echo "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
 
@@ -99,6 +126,7 @@ while :; do
 		do
 			execut $i $path
 			differ $i $path
+			judge $i $path
 		done
 
         	[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
