@@ -178,11 +178,12 @@ while :; do
 				judge $i $path
 			done
 			general_judge $path
+			rm DOING/$path/a.out
 		else
 			echo "2 COMPILATION ERROR" > DOING/$path/result/judge
 		fi
+
 	        [ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
-		rm DOING/$path/a.out
 		mv DOING/$path DONE/
 
 
