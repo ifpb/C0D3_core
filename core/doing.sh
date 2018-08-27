@@ -53,7 +53,13 @@
 # Global Options
 DEBUG=1
 
-# Compiles the problem code
+# This function compiles the problem code given within the Job directory
+#
+# It finds the code file on the Job directory, generates two files named
+# compile.out and compile.return in the 'result' directory which
+# respectively have the output of the compiling command and the return
+# code of the execution of the same command. The function then return
+# this code too, indicating success or failure in compiling the code.
 function compile()
 {
 	pathc=$1
@@ -71,13 +77,17 @@ function compile()
 	returner=`echo $?`
 	echo ${returner} > result/compile.return
 	cd ${old_dir}
-	if [ ${returner} -eq 0 ]
-	then
-		return 0
-	else
-		return 1
-	fi
+	return ${returner}
 }
+
+# This function registers the differences between two outputs
+#
+# In this function, the command diff is executed to say the differences
+# between the output file that came within the Job directory and the
+# output file from the execution of the code with the given inputs that
+# came within the Job directory too. It registers the output of the diff
+# command within files related to each input file received. The files
+# are created within the 'result' directory in the Job directory.
 
 function differ()
 {
@@ -89,6 +99,14 @@ function differ()
 
 	diff DOING/${pathd}/out.${ext} DOING/${pathd}/result/stdout.${ext} > DOING/${pathd}/result/diff.${ext}
 }
+
+# This function registers the answer of a test case
+#
+# It analyzes the content of the diff file related to a specific input,
+# if the file is empty, then it creates a file wth the content
+# "0 ACCEPTED" within the 'result' directory in the Job directory, if
+# the file is not empty, then it creates a file with the content
+# "1 WRONG ANSWER" at the same directory it would be the other way.
 
 function judge()
 {
@@ -106,6 +124,16 @@ function judge()
 	fi
 	cd ${old_dir}
 }
+
+# This function determines the result for a Job
+#
+# It analyzes all the judge files created and if at least one of the
+# judge files have the content "1 WRONG ANSWER" then it stops
+# analyzing and create a file named judge within the 'result'
+# directory in the Job directory with the content "1 WRONG ANSWER",
+# if it doesn't find any judge file with that content, then it
+# creates a file named judge with the content "0 ACCEPTED" in the
+# same directory it would be the other way.
 
 function general_judge()
 {
@@ -130,6 +158,14 @@ function general_judge()
 	fi
 	cd ${old_dir}
 }
+
+# This function runs the executable file got from the compiling
+#
+# It runs the executable file got from the compiling process of the code
+# file, it creates two files for each test case, both files are created
+# within the 'result' directory in the Job directory. The files are
+# created with the content of the default output from the execution and
+# the error output of the execution.
 
 function execut()
 {
