@@ -5,7 +5,7 @@
 int main()
 {
 	void *m = malloc(100000000);
-	memset(m,0,100);
+	memset(m,0,100000000);
 
 	return 0;
 }
