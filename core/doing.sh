@@ -192,38 +192,48 @@ function execut()
 # Main loop: look for new jobs every X sec
 while :; do
 
+	# Waiting for new jobs
 	sleep 5
 
-	# if there are new jobs
+	# Verify if there are new jobs
 	njobs=`ls JOBS | grep ^Job 2> /dev/null | wc -l`
 	[ $DEBUG -eq 1 ] && echo "Number of Jobs: $njobs"
 
-	if [ ${njobs} -gt 0 ]
+	# No new jobs found.
+	if [ ${njobs} -eq 0 ]
 	then
-		path=`ls JOBS | grep ^Job | head -1`
-		[ $DEBUG -eq 1 ] && echo "PATH=$path"
-
-		mv JOBS/$path DOING/
-		compile $path
-		if [ $? -eq 0 ]
-		then
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				execut $i $path
-				differ $i $path
-				judge $i $path
-			done
-			general_judge $path
-			rm DOING/$path/a.out
-		else
-			echo "2 COMPILATION ERROR" > DOING/$path/result/judge
-		fi
-
-		[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
-		mv DOING/$path DONE/
-
-
-	else
 		[ $DEBUG -eq 1 ] && echo "Nothing to be done (Sleeping...)"
+		continue
 	fi
+
+	# At least one new job
+	path=`ls JOBS | grep ^Job | head -1`
+	[ $DEBUG -eq 1 ] && echo "PATH=$path"
+
+	mv JOBS/$path DOING/
+	compile $path
+
+	# Compilation error
+	if [ $? -ne 0 ]
+	then
+		echo "2 COMPILATION ERROR" > DOING/$path/result/judge
+		continue
+	fi
+
+	# The compiling phase was well done
+	for i in `ls DOING/$path/ | grep -E ^in.*`;
+	do
+		execut $i $path
+		differ $i $path
+		judge $i $path
+	done
+
+	# General Judging
+	general_judge $path
+	rm DOING/$path/a.out
+
+	# All done
+	[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+	mv DOING/$path DONE/
+		
 done
