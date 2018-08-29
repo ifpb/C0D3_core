@@ -200,8 +200,8 @@ while :; do
 
 	if [ ${njobs} -gt 0 ]
 	then
-		path=`ls JOBS/ | head -1`
-	        [ $DEBUG -eq 1 ] && echo "PATH=$path"
+		path=`ls JOBS | grep ^Job | head -1`
+		[ $DEBUG -eq 1 ] && echo "PATH=$path"
 
 		mv JOBS/$path DOING/
 		compile $path
@@ -219,7 +219,7 @@ while :; do
 			echo "2 COMPILATION ERROR" > DOING/$path/result/judge
 		fi
 
-	        [ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+		[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
 		mv DOING/$path DONE/
 
 
