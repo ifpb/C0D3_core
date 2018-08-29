@@ -187,13 +187,16 @@ function execut()
 # Main function of the script
 # ----------------------------------------------------------------------
 
+# Checking if running as root user (id =0)
+if [ $(id -u) -eq 0 ]; then
+   echo "You should NOT run this script as root user. Exiting..."
+   exit 1
+fi
+
 [ $DEBUG -eq 1 ] && echo "Starting the script..."
 
 # Main loop: look for new jobs every X sec
 while :; do
-
-	# Waiting for new jobs
-	sleep 5
 
 	# Verify if there are new jobs
 	njobs=`ls JOBS | grep ^Job 2> /dev/null | wc -l`
@@ -203,12 +206,15 @@ while :; do
 	if [ ${njobs} -eq 0 ]
 	then
 		[ $DEBUG -eq 1 ] && echo "Nothing to be done (Sleeping...)"
+		
+		# Waiting for new jobs
+		sleep 5
 		continue
 	fi
 
 	# At least one new job
 	path=`ls JOBS | grep ^Job | head -1`
-	[ $DEBUG -eq 1 ] && echo "PATH=$path"
+	[ $DEBUG -eq 1 ] && echo -e "\nPATH=$path"
 
 	mv JOBS/$path DOING/
 	compile $path
