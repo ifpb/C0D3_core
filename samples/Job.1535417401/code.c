@@ -1,9 +1,9 @@
 #include <stdio.h>
-#include <unistd.h>
 
 int main()
 {
-	sleep(5);
+	int i;
+	for( i=0; i<100; i++ ){ i=0; }
 
 	return 0;
 }
