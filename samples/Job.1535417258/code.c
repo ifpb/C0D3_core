@@ -4,8 +4,14 @@
 
 int main()
 {
-	void *m = malloc(100000000);
-	memset(m,0,100000000);
+	void *m;
+    
+	while( 1 )
+	{
+		/* 1 MB per iteration of this loop */
+		m = malloc(1024 * 1024 * sizeof( char ));
+		memset(m,0,1024 * 1024 * sizeof( char ));
+	}
 
 	return 0;
 }
