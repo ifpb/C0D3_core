@@ -217,6 +217,9 @@ while :; do
 	if [ $? -ne 0 ]
 	then
 		echo "2 COMPILATION ERROR" > DOING/$path/result/judge
+		
+		[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+		mv DOING/$path DONE/
 		continue
 	fi
 
