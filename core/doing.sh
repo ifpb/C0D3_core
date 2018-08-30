@@ -55,7 +55,8 @@ DEBUG=1
 
 # This function compiles the problem code given within the Job directory
 #
-# It finds the code file on the Job directory, generates two files named
+# First it Checks the size of the code file.
+# Then, it finds the code file on the Job directory, generates two files named
 # compile.out and compile.return in the 'result' directory which
 # respectively have the output of the compiling command and the return
 # code of the execution of the same command. The function then return
@@ -73,6 +74,17 @@ function compile()
 	[ $DEBUG -eq 1 ] && echo "code to be judged=${code_to_be_judged}"
 
 	mkdir result
+	
+	# Code size limit 
+	code_size=$(ls -l ${code_to_be_judged} | cut -d " " -f 5)
+	
+	[ $DEBUG -eq 1 ] && echo "Code size=${code_size}"
+	
+	if [ ${code_size} -gt 51200 ]; then
+		cd ${old_dir}
+		return 255
+	fi
+	
 	gcc ${code_to_be_judged} &> result/compile.out
 	returner=`echo $?`
 	echo ${returner} > result/compile.return
@@ -218,9 +230,20 @@ while :; do
 
 	mv JOBS/$path DOING/
 	compile $path
+	retcode=$?
+
+	# Code size error
+	if [ ${retcode} -eq 255 ]
+	then
+		echo "8 CODESIZE ERROR" > DOING/$path/result/judge
+		
+		[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+		mv DOING/$path DONE/
+		continue
+	fi
 
 	# Compilation error
-	if [ $? -ne 0 ]
+	if [ ${retcode} -ne 0 ]
 	then
 		echo "2 COMPILATION ERROR" > DOING/$path/result/judge
 		
