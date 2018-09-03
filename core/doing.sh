@@ -53,6 +53,7 @@
 # Global Options
 DEBUG=1
 OUTPUT_SIZE_LIMIT=$((1024*1024+1))
+CODE_SIZE_LIMIT=$((50*1024))
 
 # This function compiles the problem code given within the Job directory
 #
@@ -81,7 +82,7 @@ function compile()
 	
 	[ $DEBUG -eq 1 ] && echo "Code size=${code_size}"
 	
-	if [ ${code_size} -gt 51200 ]; then
+	if [ ${code_size} -gt ${CODE_SIZE_LIMIT} ]; then
 		cd ${old_dir}
 		return 255
 	fi
