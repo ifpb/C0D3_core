@@ -54,6 +54,7 @@
 DEBUG=1
 OUTPUT_SIZE_LIMIT=$((1024*1024+1))
 CODE_SIZE_LIMIT=$((50*1024))
+SLEEP_TIME=5
 
 # This function compiles the problem code given within the Job directory
 #
@@ -241,7 +242,7 @@ while :; do
 		[ $DEBUG -eq 1 ] && echo "Nothing to be done (Sleeping...)"
 		
 		# Waiting for new jobs
-		sleep 5
+		sleep ${SLEEP_TIME}
 		continue
 	fi
 
