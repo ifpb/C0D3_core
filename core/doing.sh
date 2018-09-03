@@ -52,6 +52,7 @@
 
 # Global Options
 DEBUG=1
+OUTPUT_SIZE_LIMIT=$((1024*1024+1))
 
 # This function compiles the problem code given within the Job directory
 #
@@ -128,6 +129,14 @@ function judge()
 
 	cd DOING
 	ext=`echo ${arquivo} | cut -d. -f2`
+
+	out_size=$(ls -l ${pathj}/result/stdout.${ext} | cut -d " " -f5)
+	if [ ${out_size} -ge ${OUTPUT_SIZE_LIMIT} ]; then
+		echo -e "5\nOUTPUT SIZE LIMIT EXCEEDED" > $pathj/result/judge.$ext
+		cd ${old_dir}
+		return
+	fi
+	
 	if [ `cat $pathj/result/diff.$ext | wc -l` -gt 0 ]
 	then
 		pe=$(diff -w -E -B ${pathj}/out.${ext} ${pathj}/result/stdout.${ext})
@@ -201,7 +210,7 @@ function execut()
 	[ $DEBUG -eq 1 ] && echo "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
 
 	#cat ${arquivo} | ./a.out > result/stdout.$ext 2> result/stderr.$ext
-	{ ./a.out < ${arquivo} > result/stdout.$ext; } 2> result/stderr.$ext
+	{ ./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext; } 2> result/stderr.$ext
 
 	cd ${old_dir}
 }
