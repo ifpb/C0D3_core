@@ -74,20 +74,20 @@ function compile()
 	code_to_be_judged=( $(ls | grep *.c) )
 	code_to_be_judged=${code_to_be_judged[0]}
 
-	[ $DEBUG -eq 1 ] && echo "code to be judged=${code_to_be_judged}"
+	[ $DEBUG -eq 1 ] && echo -e  "\e[01;33mcode to be judged=${code_to_be_judged}\e[00m"
 
 	mkdir result
-	
-	# Code size limit 
+
+	# Code size limit
 	code_size=$(ls -l ${code_to_be_judged} | cut -d " " -f 5)
-	
-	[ $DEBUG -eq 1 ] && echo "Code size=${code_size}"
-	
+
+	[ $DEBUG -eq 1 ] && echo -e "\e[01;34mCode size=${code_size}\e[00m"
+
 	if [ ${code_size} -gt ${CODE_SIZE_LIMIT} ]; then
 		cd ${old_dir}
 		return 255
 	fi
-	
+
 	gcc ${code_to_be_judged} &> result/compile.out
 	returner=`echo $?`
 	echo ${returner} > result/compile.return
@@ -110,7 +110,7 @@ function differ()
 	pathd=$2
 	ext=`echo ${arquivo} | cut -d. -f2`
 
-	[ $DEBUG -eq 1 ] && echo "Diff phase between: ${pathd}/out.${ext} and ${pathd}/result/stdout.${ext}"
+	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mDiff phase between: ${pathd}/out.${ext} and ${pathd}/result/stdout.${ext}\e[00m"
 
 	diff DOING/${pathd}/out.${ext} DOING/${pathd}/result/stdout.${ext} > DOING/${pathd}/result/diff.${ext}
 }
@@ -138,7 +138,7 @@ function judge()
 		cd ${old_dir}
 		return
 	fi
-	
+
 	if [ `cat $pathj/result/diff.$ext | wc -l` -gt 0 ]
 	then
 		pe=$(diff -w -E -B ${pathj}/out.${ext} ${pathj}/result/stdout.${ext})
@@ -175,7 +175,7 @@ function general_judge()
 	do
 		[ `cat $i | head -1` -gt $worst_code ] & worst_code=$(cat $i | head -1)
 	done
-	
+
 	case $worst_code in
 		0) echo -e "0\nACCEPTED" > judge ;;
 		1) echo -e "1\nPRESENTATION ERROR" > judge ;;
@@ -188,7 +188,7 @@ function general_judge()
 		8) echo -e "8\nJOB SUBMISSION ERROR" > judge ;;
 		*) echo -e "999\nUNDEFINED ERROR" > judge ;;
 	esac
-	
+
 	cd ${old_dir}
 }
 
@@ -209,7 +209,7 @@ function execut()
 	ext=`echo ${arquivo} | cut -d. -f2`
 	cd DOING/$pathe
 
-	[ $DEBUG -eq 1 ] && echo "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
+	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mExec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext\e[00m"
 
 	#cat ${arquivo} | ./a.out > result/stdout.$ext 2> result/stderr.$ext
 	{ ./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext; } 2> result/stderr.$ext
@@ -223,13 +223,13 @@ function execut()
 
 # Checking if running as root user (id =0)
 if [ $(id -u) -eq 0 ]; then
-   echo "You should NOT run this script as root user. Exiting..."
+   echo -e "\e[01;31mYou should NOT run this script as root user. Exiting...\e[00m"
    exit 1
 fi
 
 # Checking the configuration file
 if [ ! -r "/etc/c0r3.cfg" ]; then
-	echo "Configuration file '/etc/c0r3.cfg' not found. Using default values..."
+	echo -e "\e[01;31mConfiguration file '/etc/c0r3.cfg' not found. Using default values...\e[00m"
 else
 	rm -rf /tmp/c0r3.cfg 2> /dev/null
 	cat /etc/c0r3.cfg | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
@@ -245,7 +245,7 @@ else
 fi
 
 
-[ $DEBUG -eq 1 ] && echo "Starting the script..."
+[ $DEBUG -eq 1 ] && echo -e "\e[01;33mStarting the script...\e[00m"
 
 
 # Main loop: look for new jobs every X sec
@@ -253,13 +253,13 @@ while :; do
 
 	# Verify if there are new jobs
 	njobs=`ls JOBS | grep ^Job 2> /dev/null | wc -l`
-	[ $DEBUG -eq 1 ] && echo "Number of Jobs: $njobs"
+	[ $DEBUG -eq 1 ] && echo -e "\e[01;34mNumber of Jobs: $njobs\e[00m"
 
 	# No new jobs found.
 	if [ ${njobs} -eq 0 ]
 	then
-		[ $DEBUG -eq 1 ] && echo "Nothing to be done (Sleeping...)"
-		
+		[ $DEBUG -eq 1 ] && echo -e "\e[01;34mNothing to be done (Sleeping...)\e[00m"
+
 		# Waiting for new jobs
 		sleep ${SLEEP_TIME}
 		continue
@@ -267,7 +267,7 @@ while :; do
 
 	# At least one new job
 	path=`ls JOBS | grep ^Job | head -1`
-	[ $DEBUG -eq 1 ] && echo -e "\nPATH=$path"
+	[ $DEBUG -eq 1 ] && echo -e "\e[01;34m\nPATH=$path\e[00m"
 
 	mv JOBS/$path DOING/
 	compile $path
@@ -277,8 +277,8 @@ while :; do
 	if [ ${retcode} -eq 255 ]
 	then
 		echo -e "7\nCODE SIZE LIMIT EXCEEDED" > DOING/$path/result/judge
-		
-		[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+
+		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
 		mv DOING/$path DONE/
 		continue
 	fi
@@ -286,9 +286,9 @@ while :; do
 	# Compilation error
 	if [ ${retcode} -ne 0 ]
 	then
-		echo -e "6\nCOMPILATION ERROR" > DOING/$path/result/judge
-		
-		[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+		echo -e "\e[01;31m6\nCOMPILATION ERROR\e[00m" > DOING/$path/result/judge
+
+		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
 		mv DOING/$path DONE/
 		continue
 	fi
@@ -306,7 +306,7 @@ while :; do
 	rm DOING/$path/a.out
 
 	# All done
-	[ $DEBUG -eq 1 ] && echo "Moving JOB to DONE folder"
+	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
 	mv DOING/$path DONE/
-		
+
 done
