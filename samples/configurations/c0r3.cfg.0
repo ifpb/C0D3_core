@@ -1,0 +1,3 @@
+DEBUG 0        # 0 = NO DEBUG, 1 = DEBUG
+SLEEP_TIME 2   # 2 seconds
+

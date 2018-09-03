@@ -227,7 +227,26 @@ if [ $(id -u) -eq 0 ]; then
    exit 1
 fi
 
+# Checking the configuration file
+if [ ! -r "/etc/c0r3.cfg" ]; then
+	echo "Configuration file '/etc/c0r3.cfg' not found. Using default values..."
+else
+	rm -rf /tmp/c0r3.cfg 2> /dev/null
+	cat /etc/c0r3.cfg | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
+	while read a b; do
+		case $a in
+			"DEBUG") DEBUG=${b} ;;
+			"OUTPUT_SIZE_LIMIT")= OUTPUT_SIZE_LIMIT=${b} ;;
+			"CODE_SIZE_LIMIT")= CODE_SIZE_LIMIT=${b} ;;
+			"SLEEP_TIME") SLEEP_TIME=${b};;
+		esac
+	done < /tmp/c0r3.cfg
+	rm -rf /tmp/c0r3.cfg 2> /dev/null
+fi
+
+
 [ $DEBUG -eq 1 ] && echo "Starting the script..."
+
 
 # Main loop: look for new jobs every X sec
 while :; do

@@ -1,0 +1,9 @@
+# It is a comment
+
+# blank lines are ignored
+
+DEBUG 0 # it is a comment too
+1 2 3   # lines with more than 2 fields are ignored
+
+SLEEP_TIME 2
+
