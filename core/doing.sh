@@ -291,7 +291,22 @@ while :; do
 	fi
 
 	# At least one new job
-	path=`ls JOBS | grep ^Job | head -1`
+	# look for ready jobs. i.e. the file job/meta/lockfree exists
+	the_first_10_jobs=( $(ls JOBS | grep ^Job | head -10) )
+	path=""
+	for job in ${the_first_10_jobs[*]}; do
+		if [ -e "JOBS/${job}/meta/lockfree" ]; then
+			path=$job;
+			break
+		fi
+	done
+
+	if [ -z "${path}" ]; then
+		[ $DEBUG -eq 1 ] && echo -e "\e[01;34mThere are no ready Jobs (Sleeping...)\e[00m"
+		sleep ${SLEEP_TIME}
+		continue		
+	fi
+	
 	[ $DEBUG -eq 1 ] && echo -e "\e[01;34m\nPATH=$path\e[00m"
 
 	mv JOBS/$path DOING/
