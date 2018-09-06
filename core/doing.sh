@@ -55,6 +55,28 @@ DEBUG=1
 OUTPUT_SIZE_LIMIT=$((1024*1024+1))
 CODE_SIZE_LIMIT=$((50*1024))
 SLEEP_TIME=5
+BASE_DIR=""
+
+# This function finds the base directory for this script and goes to it!
+#
+# First it Checks the if the base directory is setted in the configuration file.
+# Then, it checks if the directoris JOBS, DOING and DONE exists and if it
+# is possible to write in there.
+function goto_base_dir()
+{
+	[ "${BASE_DIR}" = "" ] && BASE_DIR=$( dirname $0 )
+
+	cd ${BASE_DIR}
+	
+	for req_dir in "JOBS" "DOING" "DONE"; do
+		if [ ! -d "${req_dir}" ] || [ ! -w "${req_dir}" ]
+		then
+			echo -e "\e[01;31mDirectory ${BASE_DIR}/${req_dir} not found or not writable. Exiting...\e[00m"
+			exit 0
+		fi
+	done
+}
+
 
 # This function compiles the problem code given within the Job directory
 #
@@ -239,11 +261,14 @@ else
 			"OUTPUT_SIZE_LIMIT")= OUTPUT_SIZE_LIMIT=${b} ;;
 			"CODE_SIZE_LIMIT")= CODE_SIZE_LIMIT=${b} ;;
 			"SLEEP_TIME") SLEEP_TIME=${b};;
+			"BASE_DIR") BASE_DIR=${b};;
 		esac
 	done < /tmp/c0r3.cfg
 	rm -rf /tmp/c0r3.cfg 2> /dev/null
 fi
 
+# Going to BASE_DIR
+goto_base_dir
 
 [ $DEBUG -eq 1 ] && echo -e "\e[01;33mStarting the script...\e[00m"
 
@@ -310,3 +335,4 @@ while :; do
 	mv DOING/$path DONE/
 
 done
+
