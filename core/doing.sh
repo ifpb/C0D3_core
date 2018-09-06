@@ -326,7 +326,7 @@ while :; do
 	# Compilation error
 	if [ ${retcode} -ne 0 ]
 	then
-		echo -e "\e[01;31m6\nCOMPILATION ERROR\e[00m" > DOING/$path/result/judge
+		echo -e "6\nCOMPILATION ERROR" > DOING/$path/result/judge
 
 		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
 		mv DOING/$path DONE/
