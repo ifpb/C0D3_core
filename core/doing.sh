@@ -149,14 +149,22 @@ function judge()
 {
 	arquivo=$1
 	pathj=$2
+	execode=$3
+	
 	old_dir=$(pwd)
 
 	cd DOING
 	ext=`echo ${arquivo} | cut -d. -f2`
 
+	if [ ${execode} -eq 139 ]; then
+		echo -e "3\nRUNTIME_ERROR" > $pathj/result/judge.$ext
+		cd ${old_dir}
+		return
+	fi
+
 	out_size=$(ls -l ${pathj}/result/stdout.${ext} | cut -d " " -f5)
 	if [ ${out_size} -ge ${OUTPUT_SIZE_LIMIT} ]; then
-		echo -e "5\nOUTPUT SIZE LIMIT EXCEEDED" > $pathj/result/judge.$ext
+		echo -e "6\nOUTPUT SIZE LIMIT EXCEEDED" > $pathj/result/judge.$ext
 		cd ${old_dir}
 		return
 	fi
@@ -202,12 +210,13 @@ function general_judge()
 		0) echo -e "0\nACCEPTED" > judge ;;
 		1) echo -e "1\nPRESENTATION ERROR" > judge ;;
 		2) echo -e "2\nWRONG ANSWER" > judge ;;
-		3) echo -e "3\nTIME LIMIT EXCEEDED" > judge ;;
-		4) echo -e "4\nMEMORY LIMIT EXCEEDED" > judge ;;
-		5) echo -e "5\nOUTPUT SIZE LIMIT EXCEEDED" > judge ;;
-		6) echo -e "6\nCOMPILATION ERROR" > judge ;;
-		7) echo -e "7\nCODE SIZE LIMIT EXCEEDED" > judge ;;
-		8) echo -e "8\nJOB SUBMISSION ERROR" > judge ;;
+		3) echo -e "3\nRUNTIME_ERROR" > judge ;;
+		3) echo -e "4\nTIME LIMIT EXCEEDED" > judge ;;
+		4) echo -e "5\nMEMORY LIMIT EXCEEDED" > judge ;;
+		5) echo -e "6\nOUTPUT SIZE LIMIT EXCEEDED" > judge ;;
+		6) echo -e "7\nCOMPILATION ERROR" > judge ;;
+		7) echo -e "8\nCODE SIZE LIMIT EXCEEDED" > judge ;;
+		8) echo -e "9\nJOB SUBMISSION ERROR" > judge ;;
 		*) echo -e "999\nUNDEFINED ERROR" > judge ;;
 	esac
 
@@ -234,9 +243,13 @@ function execut()
 	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mExec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext\e[00m"
 
 	#cat ${arquivo} | ./a.out > result/stdout.$ext 2> result/stderr.$ext
-	{ ./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext; } 2> result/stderr.$ext
+	{
+		./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
+		execcode=${PIPESTATUS[0]};
+	} 2> result/stderr.$ext
 
 	cd ${old_dir}
+	return ${execcode}
 }
 
 # ----------------------------------------------------------------------
@@ -316,7 +329,7 @@ while :; do
 	# Code size error
 	if [ ${retcode} -eq 255 ]
 	then
-		echo -e "7\nCODE SIZE LIMIT EXCEEDED" > DOING/$path/result/judge
+		echo -e "8\nCODE SIZE LIMIT EXCEEDED" > DOING/$path/result/judge
 
 		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
 		mv DOING/$path DONE/
@@ -326,7 +339,7 @@ while :; do
 	# Compilation error
 	if [ ${retcode} -ne 0 ]
 	then
-		echo -e "6\nCOMPILATION ERROR" > DOING/$path/result/judge
+		echo -e "7\nCOMPILATION ERROR" > DOING/$path/result/judge
 
 		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
 		mv DOING/$path DONE/
@@ -337,8 +350,10 @@ while :; do
 	for i in `ls DOING/$path/ | grep -E ^in.*`;
 	do
 		execut $i $path
-		differ $i $path
-		judge $i $path
+		execcode=$?
+		
+		[ ${execcode} -eq 0 ] && differ $i $path 
+		judge $i $path ${execcode}
 	done
 
 	# General Judging
