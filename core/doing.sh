@@ -56,6 +56,7 @@ OUTPUT_SIZE_LIMIT=$((1024*1024+1))
 CODE_SIZE_LIMIT=$((50*1024))
 SLEEP_TIME=5
 BASE_DIR=""
+DEFAULT_MEMORY_LIMIT=$((50*1024)) # in KB
 
 # This function finds the base directory for this script and goes to it!
 #
@@ -156,6 +157,12 @@ function judge()
 	cd DOING
 	ext=`echo ${arquivo} | cut -d. -f2`
 
+	if [ ${execode} -eq 127 -o ${execode} -eq 137 ]; then
+		echo -e "5\nMEMORY LIMIT EXCEEDED" > $pathj/result/judge.$ext
+		cd ${old_dir}
+		return
+	fi
+	
 	if [ ${execode} -eq 139 ]; then
 		echo -e "3\nRUNTIME_ERROR" > $pathj/result/judge.$ext
 		cd ${old_dir}
@@ -255,6 +262,7 @@ function execut()
 	total_running_time=0
 
 	(
+		ulimit -v ${DEFAULT_MEMORY_LIMIT}
 		echo ${BASHPID} > exec.pid;
 		{
 			echo "0" > result/retcode.$ext;
