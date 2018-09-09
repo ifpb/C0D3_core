@@ -162,6 +162,12 @@ function judge()
 		return
 	fi
 
+	if [ ${execode} -eq 255 ]; then
+		echo -e "4\nTIME LIMIT EXCEEDED" > $pathj/result/judge.$ext
+		cd ${old_dir}
+		return
+	fi
+
 	out_size=$(ls -l ${pathj}/result/stdout.${ext} | cut -d " " -f5)
 	if [ ${out_size} -ge ${OUTPUT_SIZE_LIMIT} ]; then
 		echo -e "6\nOUTPUT SIZE LIMIT EXCEEDED" > $pathj/result/judge.$ext
@@ -211,12 +217,12 @@ function general_judge()
 		1) echo -e "1\nPRESENTATION ERROR" > judge ;;
 		2) echo -e "2\nWRONG ANSWER" > judge ;;
 		3) echo -e "3\nRUNTIME_ERROR" > judge ;;
-		3) echo -e "4\nTIME LIMIT EXCEEDED" > judge ;;
-		4) echo -e "5\nMEMORY LIMIT EXCEEDED" > judge ;;
-		5) echo -e "6\nOUTPUT SIZE LIMIT EXCEEDED" > judge ;;
-		6) echo -e "7\nCOMPILATION ERROR" > judge ;;
-		7) echo -e "8\nCODE SIZE LIMIT EXCEEDED" > judge ;;
-		8) echo -e "9\nJOB SUBMISSION ERROR" > judge ;;
+		4) echo -e "4\nTIME LIMIT EXCEEDED" > judge ;;
+		5) echo -e "5\nMEMORY LIMIT EXCEEDED" > judge ;;
+		6) echo -e "6\nOUTPUT SIZE LIMIT EXCEEDED" > judge ;;
+		7) echo -e "7\nCOMPILATION ERROR" > judge ;;
+		8) echo -e "8\nCODE SIZE LIMIT EXCEEDED" > judge ;;
+		9) echo -e "9\nJOB SUBMISSION ERROR" > judge ;;
 		*) echo -e "999\nUNDEFINED ERROR" > judge ;;
 	esac
 
@@ -242,12 +248,42 @@ function execut()
 
 	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mExec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext\e[00m"
 
-	#cat ${arquivo} | ./a.out > result/stdout.$ext 2> result/stderr.$ext
-	{
-		./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
-		execcode=${PIPESTATUS[0]};
-	} 2> result/stderr.$ext
+	# miliseconds 
+	total_time_limit=3000
+	step_time=10
+	step_time_in_seconds=0.01
+	total_running_time=0
 
+	(
+		echo ${BASHPID} > exec.pid;
+		{
+			echo "0" > result/retcode.$ext;
+			./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
+			echo ${PIPESTATUS[0]} > result/retcode.$ext;
+		} 2> result/stderr.$ext
+	) 2> /dev/null &
+
+	sleep ${step_time_in_seconds}
+	sub_shell_pid=$(cat exec.pid)
+	rm exec.pid
+	
+	while [ "${total_running_time}" -lt "${total_time_limit}" ]
+	do
+		kill -0 ${sub_shell_pid} &> /dev/null
+		[ $? -ne 0 ] && break;
+		sleep ${step_time_in_seconds}
+		total_running_time=$((${total_running_time} + ${step_time}))
+	done
+	
+	kill -9 ${sub_shell_pid} &> /dev/null
+	wait ${sub_shell_pid} 2>/dev/null
+	
+	execcode=$(cat result/retcode.$ext)
+	
+	if [ "${total_running_time}" -ge "${total_time_limit}" ]; then
+		execcode=255
+	fi
+	
 	cd ${old_dir}
 	return ${execcode}
 }
