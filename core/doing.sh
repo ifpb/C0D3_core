@@ -68,11 +68,11 @@ function goto_base_dir()
 	[ "${BASE_DIR}" = "" ] && BASE_DIR=$( dirname $0 )
 
 	cd ${BASE_DIR}
-	
+
 	for req_dir in "JOBS" "DOING" "DONE"; do
 		if [ ! -d "${req_dir}" ] || [ ! -w "${req_dir}" ]
 		then
-			echo -e "\e[01;31mDirectory ${BASE_DIR}/${req_dir} not found or not writable. Exiting...\e[00m"
+			red_debug "Directory ${BASE_DIR}/${req_dir} not found or not writable. Exiting..."
 			exit 0
 		fi
 	done
@@ -97,14 +97,14 @@ function compile()
 	code_to_be_judged=( $(ls | grep *.c) )
 	code_to_be_judged=${code_to_be_judged[0]}
 
-	[ $DEBUG -eq 1 ] && echo -e  "\e[01;33mcode to be judged=${code_to_be_judged}\e[00m"
+	[ $DEBUG -eq 1 ] && yellow_debug "code to be judged=${code_to_be_judged}"
 
 	mkdir result
 
 	# Code size limit
 	code_size=$(ls -l ${code_to_be_judged} | cut -d " " -f 5)
 
-	[ $DEBUG -eq 1 ] && echo -e "\e[01;34mCode size=${code_size}\e[00m"
+	[ $DEBUG -eq 1 ] && blue_debug "Code size=${code_size}"
 
 	if [ ${code_size} -gt ${CODE_SIZE_LIMIT} ]; then
 		cd ${old_dir}
@@ -133,7 +133,7 @@ function differ()
 	pathd=$2
 	ext=`echo ${arquivo} | cut -d. -f2`
 
-	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mDiff phase between: ${pathd}/out.${ext} and ${pathd}/result/stdout.${ext}\e[00m"
+	[ $DEBUG -eq 1 ] && yellow_debug "Diff phase between: ${pathd}/out.${ext} and ${pathd}/result/stdout.${ext}"
 
 	diff DOING/${pathd}/out.${ext} DOING/${pathd}/result/stdout.${ext} > DOING/${pathd}/result/diff.${ext}
 }
@@ -151,7 +151,7 @@ function judge()
 	arquivo=$1
 	pathj=$2
 	execode=$3
-	
+
 	old_dir=$(pwd)
 
 	cd DOING
@@ -162,7 +162,7 @@ function judge()
 		cd ${old_dir}
 		return
 	fi
-	
+
 	if [ ${execode} -eq 139 ]; then
 		echo -e "3\nRUNTIME_ERROR" > $pathj/result/judge.$ext
 		cd ${old_dir}
@@ -253,9 +253,9 @@ function execut()
 	ext=`echo ${arquivo} | cut -d. -f2`
 	cd DOING/$pathe
 
-	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mExec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext\e[00m"
+	[ $DEBUG -eq 1 ] && yellow_debug "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
 
-	# miliseconds 
+	# miliseconds
 	total_time_limit=3000
 	step_time=10
 	step_time_in_seconds=0.01
@@ -274,7 +274,7 @@ function execut()
 	sleep ${step_time_in_seconds}
 	sub_shell_pid=$(cat exec.pid)
 	rm exec.pid
-	
+
 	while [ "${total_running_time}" -lt "${total_time_limit}" ]
 	do
 		kill -0 ${sub_shell_pid} &> /dev/null
@@ -282,33 +282,53 @@ function execut()
 		sleep ${step_time_in_seconds}
 		total_running_time=$((${total_running_time} + ${step_time}))
 	done
-	
+
 	kill -9 ${sub_shell_pid} &> /dev/null
 	wait ${sub_shell_pid} 2>/dev/null
-	
+
 	execcode=$(cat result/retcode.$ext)
-	
+
 	if [ "${total_running_time}" -ge "${total_time_limit}" ]; then
 		execcode=255
 	fi
-	
+
 	cd ${old_dir}
 	return ${execcode}
 }
 
+function red_debug ()
+{
+	color=$1
+	echo -e "\e[01;31m$color\e[00m"
+}
+function yellow_debug ()
+{
+	color=$1
+	echo -e "\e[01;33m$color\e[00m"
+}
+function green_debug ()
+{
+	color=$1
+	echo -e "\e[01;32m$color\e[00m"
+}
+function blue_debug ()
+{
+	color=$1
+	echo -e "\e[01;34m$color\e[00m"
+}
 # ----------------------------------------------------------------------
 # Main function of the script
 # ----------------------------------------------------------------------
 
 # Checking if running as root user (id =0)
 if [ $(id -u) -eq 0 ]; then
-   echo -e "\e[01;31mYou should NOT run this script as root user. Exiting...\e[00m"
+   red_debug "You should NOT run this script as root user. Exiting..."
    exit 1
 fi
 
 # Checking the configuration file
 if [ ! -r "/etc/c0r3.cfg" ]; then
-	echo -e "\e[01;31mConfiguration file '/etc/c0r3.cfg' not found. Using default values...\e[00m"
+	red_debug "Configuration file '/etc/c0r3.cfg' not found. Using default values..."
 else
 	rm -rf /tmp/c0r3.cfg 2> /dev/null
 	cat /etc/c0r3.cfg | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
@@ -327,7 +347,7 @@ fi
 # Going to BASE_DIR
 goto_base_dir
 
-[ $DEBUG -eq 1 ] && echo -e "\e[01;33mStarting the script...\e[00m"
+[ $DEBUG -eq 1 ] && yellow_debug  "Starting the script..."
 
 
 # Main loop: look for new jobs every X sec
@@ -335,12 +355,12 @@ while :; do
 
 	# Verify if there are new jobs
 	njobs=`ls JOBS | grep ^Job 2> /dev/null | wc -l`
-	[ $DEBUG -eq 1 ] && echo -e "\e[01;34mNumber of Jobs: $njobs\e[00m"
+	[ $DEBUG -eq 1 ] && blue_debug "Number of Jobs: $njobs"
 
 	# No new jobs found.
 	if [ ${njobs} -eq 0 ]
 	then
-		[ $DEBUG -eq 1 ] && echo -e "\e[01;34mNothing to be done (Sleeping...)\e[00m"
+		[ $DEBUG -eq 1 ] && blue_debug "Nothing to be done (Sleeping...)"
 
 		# Waiting for new jobs
 		sleep ${SLEEP_TIME}
@@ -359,12 +379,12 @@ while :; do
 	done
 
 	if [ -z "${path}" ]; then
-		[ $DEBUG -eq 1 ] && echo -e "\e[01;34mThere are no ready Jobs (Sleeping...)\e[00m"
+		[ $DEBUG -eq 1 ] && blue_debug "There are no ready Jobs (Sleeping...)"
 		sleep ${SLEEP_TIME}
-		continue		
+		continue
 	fi
-	
-	[ $DEBUG -eq 1 ] && echo -e "\e[01;34m\nPATH=$path\e[00m"
+
+	[ $DEBUG -eq 1 ] && blue_debug "\nPATH=$path"
 
 	mv JOBS/$path DOING/
 	compile $path
@@ -375,7 +395,7 @@ while :; do
 	then
 		echo -e "8\nCODE SIZE LIMIT EXCEEDED" > DOING/$path/result/judge
 
-		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
+		[ $DEBUG -eq 1 ] && yellow_debug "Moving JOB to DONE folder"
 		mv DOING/$path DONE/
 		continue
 	fi
@@ -385,7 +405,7 @@ while :; do
 	then
 		echo -e "7\nCOMPILATION ERROR" > DOING/$path/result/judge
 
-		[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
+		[ $DEBUG -eq 1 ] && yellow_debug "Moving JOB to DONE folder"
 		mv DOING/$path DONE/
 		continue
 	fi
@@ -395,7 +415,7 @@ while :; do
 	do
 		execut $i $path
 		execcode=$?
-		
+
 		[ ${execcode} -eq 0 ] && differ $i $path 
 		judge $i $path ${execcode}
 	done
@@ -405,7 +425,7 @@ while :; do
 	rm DOING/$path/a.out
 
 	# All done
-	[ $DEBUG -eq 1 ] && echo -e "\e[01;33mMoving JOB to DONE folder\e[00m"
+	[ $DEBUG -eq 1 ] && yellow_debug "Moving JOB to DONE folder"
 	mv DOING/$path DONE/
 
 done
