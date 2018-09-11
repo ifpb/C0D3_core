@@ -384,6 +384,39 @@ while :; do
 		continue
 	fi
 
+	checkjob.sh $path
+	reschkjob=$?
+
+	case ${reschkjob} in
+		0)
+			[ $DEBUG -eq 1 ] && green_debug "The format of the Job is OK!"
+			;;
+		1)
+			[ $DEBUG -eq 1 ] && red_debug "The meta directory seems to doesn't exist..."
+			;;
+		2)
+			[ $DEBUG -eq 1 ] && red_debug "One of the files that should be within the meta directory doesn't exist..."
+			;;
+		3)
+			[ $DEBUG -eq 1 ] && red_debug "The code file doesn't exist..."
+			;;
+		4)
+			[ $DEBUG -eq 1 ] && red_debug "The quantity of the input files and output files is different..."
+			;;
+		5)
+			[ $DEBUG -eq 1 ] && red_debug "One, some or all of the input files and output files are not related..."
+			;;
+		6)
+			[ $DEBUG -eq 1 ] && red_debug "The language of the code is not supported by this core..."
+			;;
+		7)
+			[ $DEBUG -eq 1 ] && red_debug "The language indicated by the 'language' file and the extension of the code file doesn't match..."
+			;;
+		*)
+			[ $DEBUG -eq 1 ] && red_debug "Unknown return code D:|"
+			;;
+	esac
+
 	[ $DEBUG -eq 1 ] && blue_debug "\nPATH=$path"
 
 	mv JOBS/$path DOING/
