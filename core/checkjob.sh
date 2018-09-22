@@ -18,9 +18,9 @@
 # the language indicated by the file and the extension of the code file
 # are of the same language.
 
-PATH=$1
+PATHO=$1
 old_dirjob=`pwd`
-cd $PATH
+cd JOBS/$PATHO
 
 # This part of the code checks the state of the 'meta' directory within
 # the Job directory
@@ -37,6 +37,7 @@ cd $PATH
 
 if [ `ls -d meta/ | wc -l` -eq 0 ]
 then
+	echo "EXIT 1"
 	exit 1
 elif [ `ls meta/ | grep -w comments | wc -l` -eq 0 ] || \
 [ `ls meta/ | grep -w done_url | wc -l` -eq 0 ] || \
@@ -44,8 +45,9 @@ elif [ `ls meta/ | grep -w comments | wc -l` -eq 0 ] || \
 [ `ls meta/ | grep -w ID | wc -l` -eq 0 ] || \
 [ `ls meta/ | grep -w language | wc -l` -eq 0 ] || \
 [ `ls meta/ | grep -w memory_limit | wc -l` -eq 0 ] || \
-[ `ls meta/ | grep -w time_limit | wc -l`-eq 0 ]
+[ `ls meta/ | grep -w time_limit | wc -l` -eq 0 ]
 then
+	echo "EXIT 2"
 	exit 2
 fi
 
@@ -58,6 +60,7 @@ fi
 if [ `ls | grep code.* | wc -l` -eq 0 ]
 then
 	cd ${old_dirjob}
+	echo "EXIT 3"
 	exit 3
 fi
 
@@ -71,25 +74,36 @@ fi
 # same extension, in case are all related, it continues the execution of
 # this script, in other case it returns the exit code 5.
 
-ls | grep in.* > inputs
-ls | grep out.* > outputs
+ls `pwd`/in.* > inputs
+ls `pwd`/out.* > outputs
 num_inputs=`cat inputs | wc -l`
 num_outputs=`cat outputs | wc -l`
-if [ ${num_inputs} -eq ${num_outputs} ]
+if [ ${num_inputs} -ne ${num_outputs} ]
 then
 	cd ${old_dirjob}
+	echo "EXIT 4"
 	exit 4
 fi
 
+echo 0 > exiter
 cat inputs | while read line
 do
-	jobext=`echo $line | cut -d. -f2-`
-	if [ `cat outputs | grep out.$jobext | wc -l` -eq 0 ]
+	jobexten=`echo $line | rev | cut -d. -f1 | rev`
+	if [ `cat outputs | grep -w out.${jobexten} | wc -l` -eq 0 ]
 	then
-		cd ${old_dirjob}
-		exit 5
+		echo 5 > exiter
+		echo "EXIT 5"
+		break
 	fi
 done
+rm inputs
+rm outputs
+if [ `cat exiter` -eq 5 ]
+then
+	rm exiter
+	cd ${old_dirjob}
+	exit 5
+fi
 
 # This part of the code checks if the language is supported by the core
 #
@@ -108,41 +122,48 @@ case $lang in
 	c)
 		if [ `ls | grep code.c | wc -l` -eq 0 ]
 		then
-			return 7
+			echo "EXIT 7"
+			exit 7
 		fi
 		;;
 	c++)
 		if [ `ls | grep code.cpp | wc -l` -eq 0 ]
 		then
-			return 7
+			echo "EXIT 7"
+			exit 7
 		fi
 		;;
 	java)
 		if [ `ls | grep code.java | wc -l` -eq 0 ]
 		then
-			return 7
+			echo "EXIT 7"
+			exit 7
 		fi
 		;;
 	python2)
 		if [ `ls | grep code.py | wc -l` -eq 0 ]
 		then
-			return 7
+			echo "EXIT 7"
+			exit 7
 		fi
 		;;
 	python3)
 		if [ `ls | grep code.py | wc -l` -eq 0 ]
 		then
-			return 7
+			echo "EXIT 7"
+			exit 7
 		fi
 		;;
 	pascal)
 		if [ `ls | grep code.pas | wc -l` -eq 0 ]
 		then
-			return 7
+			echo "EXIT 7"
+			exit 7
 		fi
 		;;
 	*)
 		cd ${old_dirjob}
+		echo "EXIT 6"
 		exit 6
 	;;
 esac

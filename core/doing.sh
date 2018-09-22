@@ -384,7 +384,7 @@ while :; do
 		continue
 	fi
 
-	checkjob.sh $path
+	./checkjob.sh $path
 	reschkjob=$?
 
 	case ${reschkjob} in
@@ -392,7 +392,7 @@ while :; do
 			[ $DEBUG -eq 1 ] && green_debug "The format of the Job is OK!"
 			;;
 		1)
-			[ $DEBUG -eq 1 ] && red_debug "The meta directory seems to doesn't exist..."
+			[ $DEBUG -eq 1 ] && red_debug "The meta directory doesn't seems to exist..."
 			;;
 		2)
 			[ $DEBUG -eq 1 ] && red_debug "One of the files that should be within the meta directory doesn't exist..."
