@@ -262,9 +262,8 @@ function execut()
 
 	# miliseconds
 	total_time_limit=`cat meta/time_limit`
-	echo "Tempo Limite Total: ${total_time_limit}"
 	step_time=10
-	step_time_in_seconds=0.01
+	step_time_in_seconds=`echo "scale=2; ${step_time} / 1000.0" | bc`
 	total_running_time=0
 
 	(
