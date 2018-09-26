@@ -243,6 +243,11 @@ function general_judge()
 # within the 'result' directory in the Job directory. The files are
 # created with the content of the default output from the execution and
 # the error output of the execution.
+#
+# This function also returns the running time of the execution to a
+# file named 'return_time.$ext' in which '$ext' refers to the extension
+# of the test case. An example would be, when the input file is 'in.0',
+# the running time related file will be 'running_time.0'.
 
 function execut()
 {
