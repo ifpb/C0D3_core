@@ -57,7 +57,9 @@ CODE_SIZE_LIMIT=$((50*1024))
 SLEEP_TIME=5
 BASE_DIR=""
 DEFAULT_MEMORY_LIMIT=$((50*1024)) # in KB
+STEP_TIME=10
 COLOR_SCHEME=1
+
 # This function finds the base directory for this script and goes to it!
 #
 # First it Checks the if the base directory is setted in the configuration file.
@@ -261,13 +263,20 @@ function execut()
 	[ $DEBUG -eq 1 ] && wait_debug "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
 
 	# miliseconds
-	total_time_limit=3000
-	step_time=10
-	step_time_in_seconds=0.01
+	total_time_limit=`cat meta/time_limit`
+	step_time_in_seconds=`echo "scale=2; ${STEP_TIME} / 1000.0" | bc`
 	total_running_time=0
+	memory_limit=`cat meta/memory_limit`
+
+	if [ ${memory_limit} -gt ${DEFAULT_MEMORY_LIMIT} ]
+	then
+		memory_limit=${DEFAULT_MEMORY_LIMIT}
+	fi
+
+	echo ${memory_limit}
 
 	(
-		ulimit -v ${DEFAULT_MEMORY_LIMIT}
+		ulimit -v ${memory_limit}
 		echo ${BASHPID} > exec.pid;
 		{
 			echo "0" > result/retcode.$ext;
@@ -317,8 +326,8 @@ function wait_debug ()
 	text=$1
 	if [ $COLOR_SCHEME -eq 1 ]; then
 		echo -e "\e[01;33m$text\e[00m"
-	fi
-	if [ $COLOR_SCHEME -eq 2 ]; then
+
+	elif [ $COLOR_SCHEME -eq 2 ]; then
 		echo -e "\e[01;35m$text\e[00m"
 	else
 		echo -e $text
@@ -330,9 +339,8 @@ function accept_debug ()
 	text=$1
 	if [ $COLOR_SCHEME -eq 1 ]; then
 		echo -e "\e[01;32m$text\e[00m"
-	fi
 
-	if [ $COLOR_SCHEME -eq 2 ]; then
+	elif [ $COLOR_SCHEME -eq 2 ]; then
 		echo -e "\e[01;34m$text\e[00m"
 	else
 		echo -e $text
@@ -343,8 +351,7 @@ function information_debug ()
 	text=$1
 	if [ $COLOR_SCHEME -eq 1 ]; then
 		echo -e "\e[01;34m$text\e[00m"
-	fi
-	if [ $COLOR_SCHEME -eq 2 ]; then
+	elif [ $COLOR_SCHEME -eq 2 ]; then
 		echo -e "\e[01;30m$text\e[00m"
 	else
 		echo -e $text
@@ -373,6 +380,7 @@ else
 			"CODE_SIZE_LIMIT")= CODE_SIZE_LIMIT=${b} ;;
 			"SLEEP_TIME") SLEEP_TIME=${b};;
 			"BASE_DIR") BASE_DIR=${b};;
+			"STEP_TIME") STEP_TIME=${b};;
 		esac
 	done < /tmp/c0r3.cfg
 	rm -rf /tmp/c0r3.cfg 2> /dev/null
