@@ -265,9 +265,17 @@ function execut()
 	total_time_limit=`cat meta/time_limit`
 	step_time_in_seconds=`echo "scale=2; ${STEP_TIME} / 1000.0" | bc`
 	total_running_time=0
+	memory_limit=`cat meta/memory_limit`
+
+	if [ ${memory_limit} -gt ${DEFAULT_MEMORY_LIMIT} ]
+	then
+		memory_limit=${DEFAULT_MEMORY_LIMIT}
+	fi
+
+	echo ${memory_limit}
 
 	(
-		ulimit -v ${DEFAULT_MEMORY_LIMIT}
+		ulimit -v ${memory_limit}
 		echo ${BASHPID} > exec.pid;
 		{
 			echo "0" > result/retcode.$ext;
