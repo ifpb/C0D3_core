@@ -292,6 +292,8 @@ function execut()
 		execcode=255
 	fi
 
+	echo ${total_running_time} > result/running_time.$ext
+
 	cd ${old_dir}
 	return ${execcode}
 }
