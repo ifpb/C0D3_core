@@ -261,7 +261,8 @@ function execut()
 	[ $DEBUG -eq 1 ] && yellow_debug "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
 
 	# miliseconds
-	total_time_limit=3000
+	total_time_limit=`cat meta/time_limit`
+	echo "Tempo Limite Total: ${total_time_limit}"
 	step_time=10
 	step_time_in_seconds=0.01
 	total_running_time=0
