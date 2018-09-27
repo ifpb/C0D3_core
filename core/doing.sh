@@ -310,7 +310,14 @@ function execut()
 	return ${execcode}
 }
 
-function error_debug ()
+# This function sets the color scheme for the 'error' messages
+#
+# It leaves set the default output color of the current terminal
+# configuration if the COLOR_SCHEME is set to 0.
+# It sets the output color to 'red' if the COLOR_SCHEME is set to any
+# other value.
+
+function error_debug()
 {
 	text=$1
 	if [ $COLOR_SCHEME -eq 0 ]; then
@@ -319,7 +326,17 @@ function error_debug ()
 		echo -e "\e[01;31m$text\e[00m"
 	fi
 }
-function wait_debug ()
+
+# This function sets the color scheme for the 'wait' messages
+#
+# It sets the output color to 'yellow' if the COLOR_SCHEME is set to 1
+# ("ideal for dark background colors in terminal").
+# It sets the output color to 'purple' if the COLOR_SCHEME is set to 2
+# ("ideal for light background colors in terminal").
+# If the COLOR_SCHEME is set to some other value it leaves set the
+# default output color of the current terminal configuration.
+
+function wait_debug()
 {
 	text=$1
 	if [ $COLOR_SCHEME -eq 1 ]; then
@@ -332,7 +349,17 @@ function wait_debug ()
 	fi
 
 }
-function accept_debug ()
+
+# This function sets the color scheme for the 'accept' messages
+#
+# It sets the output color to 'green' if the COLOR_SCHEME is set to 1
+# ("ideal for dark background colors in terminal").
+# It sets the output color to 'blue' if the COLOR_SCHEME is set to 2
+# ("ideal for light background colors in terminal").
+# If the COLOR_SCHEME is set to some other value it leaves set the
+# default output color of the current terminal configuration.
+
+function accept_debug()
 {
 	text=$1
 	if [ $COLOR_SCHEME -eq 1 ]; then
@@ -344,7 +371,17 @@ function accept_debug ()
 		echo -e $text
 	fi
 }
-function information_debug ()
+
+# This function sets the color scheme for the 'information' messages
+#
+# It sets the output color to 'blue' if the COLOR_SCHEME is set to 1
+# ("ideal for dark background colors in terminal").
+# It sets the output color to 'dark gray' if the COLOR_SCHEME is set
+# to 2 ("ideal for light background colors in terminal").
+# If the COLOR_SCHEME is set to some other value it leaves set the
+# default output color of the current terminal configuration.
+
+function information_debug()
 {
 	text=$1
 	if [ $COLOR_SCHEME -eq 1 ]; then
@@ -353,6 +390,35 @@ function information_debug ()
 		echo -e "\e[01;30m$text\e[00m"
 	else
 		echo -e $text
+	fi
+}
+
+# This function reads the values from the core configuration file
+#
+# This function searches for the configuration file in the system, and
+# if it founds it, it reads the names and values within the file and
+# the global variables within the 'doing.sh' receive the values which
+# they are related.
+
+function read_config()
+{
+	if [ ! -r "/etc/c0r3.cfg" ]; then
+		error_debug "Configuration file '/etc/c0r3.cfg' not found. Using default values..."
+	else
+		rm -rf /tmp/c0r3.cfg 2> /dev/null
+		cat /etc/c0r3.cfg | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
+		while read a b; do
+			case $a in
+				"DEBUG") DEBUG=${b} ;;
+				"OUTPUT_SIZE_LIMIT")= OUTPUT_SIZE_LIMIT=${b} ;;
+				"CODE_SIZE_LIMIT")= CODE_SIZE_LIMIT=${b} ;;
+				"SLEEP_TIME") SLEEP_TIME=${b};;
+				"BASE_DIR") BASE_DIR=${b};;
+				"STEP_TIME") STEP_TIME=${b};;
+				"DEFAULT_MEMORY_LIMIT") DEFAULT_MEMORY_LIMIT=${b};;
+			esac
+		done < /tmp/c0r3.cfg
+		rm -rf /tmp/c0r3.cfg 2> /dev/null
 	fi
 }
 # ----------------------------------------------------------------------
@@ -366,24 +432,7 @@ if [ $(id -u) -eq 0 ]; then
 fi
 
 # Checking the configuration file
-if [ ! -r "/etc/c0r3.cfg" ]; then
-	error_debug "Configuration file '/etc/c0r3.cfg' not found. Using default values..."
-else
-	rm -rf /tmp/c0r3.cfg 2> /dev/null
-	cat /etc/c0r3.cfg | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
-	while read a b; do
-		case $a in
-			"DEBUG") DEBUG=${b} ;;
-			"OUTPUT_SIZE_LIMIT")= OUTPUT_SIZE_LIMIT=${b} ;;
-			"CODE_SIZE_LIMIT")= CODE_SIZE_LIMIT=${b} ;;
-			"SLEEP_TIME") SLEEP_TIME=${b};;
-			"BASE_DIR") BASE_DIR=${b};;
-			"STEP_TIME") STEP_TIME=${b};;
-			"DEFAULT_MEMORY_LIMIT") DEFAULT_MEMORY_LIMIT=${b};;
-		esac
-	done < /tmp/c0r3.cfg
-	rm -rf /tmp/c0r3.cfg 2> /dev/null
-fi
+read_config
 
 # Going to BASE_DIR
 goto_base_dir
