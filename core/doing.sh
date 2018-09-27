@@ -273,8 +273,6 @@ function execut()
 		memory_limit=${DEFAULT_MEMORY_LIMIT}
 	fi
 
-	echo ${memory_limit}
-
 	(
 		ulimit -v ${memory_limit}
 		echo ${BASHPID} > exec.pid;
@@ -381,6 +379,7 @@ else
 			"SLEEP_TIME") SLEEP_TIME=${b};;
 			"BASE_DIR") BASE_DIR=${b};;
 			"STEP_TIME") STEP_TIME=${b};;
+			"DEFAULT_MEMORY_LIMIT") DEFAULT_MEMORY_LIMIT=${b};;
 		esac
 	done < /tmp/c0r3.cfg
 	rm -rf /tmp/c0r3.cfg 2> /dev/null
