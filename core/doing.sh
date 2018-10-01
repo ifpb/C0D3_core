@@ -416,6 +416,7 @@ function read_config()
 				"BASE_DIR") BASE_DIR=${b};;
 				"STEP_TIME") STEP_TIME=${b};;
 				"DEFAULT_MEMORY_LIMIT") DEFAULT_MEMORY_LIMIT=${b};;
+				"COLOR_SCHEME") COLOR_SCHEME=${b};;
 			esac
 		done < /tmp/c0r3.cfg
 		rm -rf /tmp/c0r3.cfg 2> /dev/null
@@ -478,38 +479,32 @@ while :; do
 	reschkjob=$?
 
 	case ${reschkjob} in
-		0)
-			[ $DEBUG -eq 1 ] && accept_debug "The format of the Job is OK!"
-			;;
-		1)
-			[ $DEBUG -eq 1 ] && error_debug "The meta directory doesn't seems to exist..."
-			;;
-		2)
-			[ $DEBUG -eq 1 ] && error_debug "One of the files that should be within the meta directory doesn't exist..."
-			;;
-		3)
-			[ $DEBUG -eq 1 ] && error_debug "The code file doesn't exist..."
-			;;
-		4)
-			[ $DEBUG -eq 1 ] && error_debug "The quantity of the input files and output files is different..."
-			;;
-		5)
-			[ $DEBUG -eq 1 ] && error_debug "One, some or all of the input files and output files are not related..."
-			;;
-		6)
-			[ $DEBUG -eq 1 ] && error_debug "The language of the code is not supported by this core..."
-			;;
-		7)
-			[ $DEBUG -eq 1 ] && error_debug "The language indicated by the 'language' file and the extension of the code file doesn't match..."
-			;;
-		*)
-			[ $DEBUG -eq 1 ] && error_debug "Unknown return code D:|"
-			;;
+		0)	[ $DEBUG -eq 1 ] && accept_debug "The format of the Job is OK!"	;;
+		1)	[ $DEBUG -eq 1 ] && error_debug "The meta directory doesn't seems to exist..."	;;
+		2)	[ $DEBUG -eq 1 ] && error_debug "One of the files that should be within the meta directory doesn't exist..." ;;
+		3)	[ $DEBUG -eq 1 ] && error_debug "The code file doesn't exist..." ;;
+		4)	[ $DEBUG -eq 1 ] && error_debug "The quantity of the input files and output files is different..." ;;
+		5)	[ $DEBUG -eq 1 ] && error_debug "One, some or all of the input files and output files are not related..." ;;
+		6)	[ $DEBUG -eq 1 ] && error_debug "The language of the code is not supported by this core..." ;;
+		7)	[ $DEBUG -eq 1 ] && error_debug "The language indicated by the 'language' file and the extension of the code file doesn't match..." ;;
+		*)	[ $DEBUG -eq 1 ] && error_debug "Unknown return code D:|" ;;
 	esac
 
 	[ $DEBUG -eq 1 ] && information_debug "\nPATH=$path"
 
+	# Moving the Job to the Working directory
 	mv JOBS/$path DOING/
+	
+	# Job Format error
+	if [ ${reschkjob} -ne 0 ]
+	then
+		echo -e "9\nJOB SUBMISSION ERROR" > DOING/$path/result/judge
+
+		[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
+		mv DOING/$path DONE/
+		continue		
+	fi
+	
 	compile $path
 	retcode=$?
 
