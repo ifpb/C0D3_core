@@ -1,9 +1,60 @@
 #!/bin/bash
 
-echo "Welcome to C0r3."
-echo ""
-echo "This script will install the c0r3 auto-judge in your computer"
-echo ""
+# Global Options
+
+COLOR_SCHEME=1
+
+function error_debug()
+{
+        text=$1
+        if [ $COLOR_SCHEME -eq 0 ]; then
+                echo -e $text
+        else
+                echo -e "\e[01;31m$text\e[00m"
+        fi
+}
+
+function wait_debug()
+{
+        text=$1
+        if [ $COLOR_SCHEME -eq 1 ]; then
+                echo -e "\e[01;33m$text\e[00m"
+
+        elif [ $COLOR_SCHEME -eq 2 ]; then
+                echo -e "\e[01;35m$text\e[00m"
+        else
+                echo -e $text
+        fi
+}
+function accept_debug()
+{
+        text=$1
+        if [ $COLOR_SCHEME -eq 1 ]; then
+                echo -e "\e[01;32m$text\e[00m"
+
+        elif [ $COLOR_SCHEME -eq 2 ]; then
+                echo -e "\e[01;34m$text\e[00m"
+        else
+                echo -e $text
+        fi
+}
+
+function information_debug()
+{
+        text=$1
+        if [ $COLOR_SCHEME -eq 1 ]; then
+                echo -e "\e[01;34m$text\e[00m"
+        elif [ $COLOR_SCHEME -eq 2 ]; then
+                echo -e "\e[01;30m$text\e[00m"
+        else
+                echo -e $text
+        fi
+}
+
+information_debug "Welcome to C0r3."
+information_debug ""
+information_debug "This script will install the c0r3 auto-judge in your computer"
+information_debug ""
 
 cd basename
 
@@ -17,34 +68,35 @@ mkdir $destination 2> /dev/null
 
 # check 1
 if [ $? -ne 0 ]; then
-	echo "Error: Impossible to create the '$destination' directory. Exiting ..."
+	error_debug "Error: Impossible to create the '$destination' directory. Exiting ..."
 	exit 0
 fi
 
 # check 2
 if [ ! -e $destination ]; then
-	echo "Error: Impossible to create the '$destination' directory. Exiting ..."
+	error_debug "Error: Impossible to create the '$destination' directory. Exiting ..."
 	exit 0
 fi
 
 # Copying the necessary files
 if [ -e core/doing.sh ]; then
-	echo -n "Copying the main files ... "
+	wait_debug -n "Copying the main files ... "
 	cp core/doing.sh ${destination}/
-	echo "done"
-	
-	echo -n "Copying the documentation files ... "
+	accept_debug "done"
+
+	wait_debug -n "Copying the documentation files ... "
 	cp dependencies LICENSE README README.md ${destination}/
-	echo "done"
-	
-	echo -n "Creating the necessary subdirectories ... "
+	accept_debug "done"
+
+	wait_debug -n "Creating the necessary subdirectories ... "
 	mkdir ${destination}/JOBS
 	mkdir ${destination}/DOING
 	mkdir ${destination}/DONE
-	echo "done"
-	
+	accept_debug "done"
+
 else
-	echo "Error: Faild to copy the file 'doing.sh' to '$destination' directory. Exiting ..."
+	error_debug "Error: Faild to copy the file 'doing.sh' to '$destination' directory. Exiting ..."
 fi
 
-echo "Done"
+accept_debug "Done"
+
