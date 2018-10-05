@@ -400,6 +400,7 @@ while :; do
 	# Job Format error
 	if [ ${reschkjob} -ne 0 ]
 	then
+		mkdir DOING/$path/result 2> /dev/null
 		echo -e "9\nJOB SUBMISSION ERROR" > DOING/$path/result/judge
 
 		[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
