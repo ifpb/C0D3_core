@@ -197,6 +197,8 @@ function general_judge()
 		*) echo -e "999\nUNDEFINED ERROR" > judge ;;
 	esac
 
+	[ $DEBUG -eq 1 ] && accept_debug "Judge Result: $(cat judge | tr '\n' ' ')"
+	
 	cd ${old_dir}
 }
 
