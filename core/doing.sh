@@ -336,6 +336,7 @@ goto_base_dir
 
 source ./langport/c_assets.sh
 source ./langport/cpp_assets.sh
+source ./langport/py2_assets.sh
 source ./langport/pas_assets.sh
 
 
@@ -472,7 +473,9 @@ while :; do
 
 	# General Judging
 	general_judge $path
-	rm DOING/$path/a.out
+	rm DOING/$path/a.out   2> /dev/null
+	rm DOING/$path/a.py    2> /dev/null
+	rm DOING/$path/a.class 2> /dev/null
 
 	# All done
 	[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
