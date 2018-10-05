@@ -61,11 +61,6 @@ DEFAULT_MEMORY_LIMIT=$((50*1024)) # in KB
 STEP_TIME=10
 COLOR_SCHEME=1
 
-# Importing functions related to compiling and execution of different
-# programming languages
-
-source langport/c_assets.sh
-source langport/cpp_assets.sh
 
 # This function finds the base directory for this script and goes to it!
 #
@@ -333,6 +328,14 @@ read_config
 # Going to BASE_DIR
 goto_base_dir
 
+
+# Importing functions related to compiling and execution of different
+# programming languages
+
+source ./langport/c_assets.sh
+source ./langport/cpp_assets.sh
+
+
 [ $DEBUG -eq 1 ] && wait_debug  "Starting the script..."
 
 
@@ -374,9 +377,7 @@ while :; do
 	reschkjob=$?
 
 	case ${reschkjob} in
-		0)	[ $DEBUG -eq 1 ] && accept_debug "The format of the Job is OK!"
-			current_language=`cat JOBS/$path/meta/language`
-			;;
+		0)	[ $DEBUG -eq 1 ] && accept_debug "The format of the Job is OK!"	;;
 		1)	[ $DEBUG -eq 1 ] && error_debug "The meta directory doesn't seems to exist..."	;;
 		2)	[ $DEBUG -eq 1 ] && error_debug "One of the files that should be within the meta directory doesn't exist..." ;;
 		3)	[ $DEBUG -eq 1 ] && error_debug "The code file doesn't exist..." ;;
@@ -402,33 +403,37 @@ while :; do
 		continue
 	fi
 
-	case $current_language in
-		c)
-			c_compile $path
-			retcode=$?
-		;;
-		c++)
-			cpp_compile $path
-			retcode=$?
-		;;
-		java)
-			java_compile $path
-			retcode=$?
-		;;
-		python2)
-			py2_compile $path
-			retcode=$?
+	# Search for the language the code was submitted
+	current_language=`cat DOING/$path/meta/language`
 
-		;;
-		python3)
-			py2_compile $path
-			retcode=$?
-		;;
-		pascal)
-			pas_compile $path
-			retcode=$?
-		;;
+	[ $DEBUG -eq 1 ] && information_debug "\nLanguage of submission: ${current_language}"
+
+	case $current_language in
+		"c")		COMPILE_FUNCTION=c_compile
+					EXEC_FUNCTION=c_execut
+					;;
+		"c++")		COMPILE_FUNCTION=cpp_compile
+					EXEC_FUNCTION=cpp_execut
+					;;
+		"java")		COMPILE_FUNCTION=java_compile
+					EXEC_FUNCTION=java_execut
+					;;
+		"python2")	COMPILE_FUNCTION=py2_compile
+					EXEC_FUNCTION=py2_execut
+					;;
+		"python3")	COMPILE_FUNCTION=py3_compile
+					EXEC_FUNCTION=py3_execut
+					;;
+		"pascal")	COMPILE_FUNCTION=pas_compile
+					EXEC_FUNCTION=pas_execut
+					;;
 	esac
+
+
+	# Compiling the code -----------------------------------------------
+	${COMPILE_FUNCTION} $path
+	retcode=$?
+
 
 	# Code size error
 	if [ ${retcode} -eq 255 ]
@@ -450,70 +455,17 @@ while :; do
 		continue
 	fi
 
-	# The compiling phase was well done
+	# The compiling phase was well done, execute! ----------------------
 
-	case $current_language in
-		c)
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				c_execut $i $path
-				execcode=$?
+	for i in $(ls DOING/$path/ | grep -E ^in.*);
+	do
+		${EXEC_FUNCTION} $i $path
+		execcode=$?
 
-				[ ${execcode} -eq 0 ] && differ $i $path 
-				judge $i $path ${execcode}
-			done
-		;;
-		c++)
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				cpp_execut $i $path
-				execcode=$?
+		[ ${execcode} -eq 0 ] && differ $i $path 
+		judge $i $path ${execcode}
+	done
 
-				[ ${execcode} -eq 0 ] && differ $i $path 
-				judge $i $path ${execcode}
-			done
-		;;
-		java)
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				java_execut $i $path
-				execcode=$?
-
-				[ ${execcode} -eq 0 ] && differ $i $path 
-				judge $i $path ${execcode}
-			done
-		;;
-		python2)
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				py2_execut $i $path
-				execcode=$?
-
-				[ ${execcode} -eq 0 ] && differ $i $path 
-				judge $i $path ${execcode}
-			done
-		;;
-		python3)
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				py3_execut $i $path
-				execcode=$?
-
-				[ ${execcode} -eq 0 ] && differ $i $path 
-				judge $i $path ${execcode}
-			done
-		;;
-		pascal)
-			for i in `ls DOING/$path/ | grep -E ^in.*`;
-			do
-				pas_execut $i $path
-				execcode=$?
-
-				[ ${execcode} -eq 0 ] && differ $i $path 
-				judge $i $path ${execcode}
-			done
-		;;
-	esac
 
 	# General Judging
 	general_judge $path
