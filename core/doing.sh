@@ -336,6 +336,7 @@ goto_base_dir
 
 source ./langport/c_assets.sh
 source ./langport/cpp_assets.sh
+source ./langport/pas_assets.sh
 
 
 [ $DEBUG -eq 1 ] && wait_debug  "Starting the script..."
