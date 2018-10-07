@@ -484,7 +484,30 @@ while :; do
 	rm DOING/$path/a.py    2> /dev/null
 	rm DOING/$path/a.class 2> /dev/null
 
-	# All done
+	# Json Response
+	jrfile="DOING/$path/result/result.json"
+	tmpfile=$(mktemp)
+
+	echo "{" > ${tmpfile}
+	for f in DOING/$path/result/*; do
+		echo -n "  \"$(basename $f)\" : [" >> ${tmpfile}
+
+		head -2 ${f} | {
+			while read val; do
+				echo -n "\"${val}\", " >> ${tmpfile}
+			done
+		} 
+		
+		echo " \"\" ]," >> ${tmpfile}
+	done
+
+	echo "  \"end\":\"\"" >> ${tmpfile}
+	echo "}" >> ${tmpfile}
+
+	mv ${tmpfile} ${jrfile}
+
+
+	# All done --------------------------------------------------------
 	[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
 	mv DOING/$path DONE/
 
