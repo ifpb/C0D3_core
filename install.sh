@@ -109,6 +109,10 @@ if [ -e core/doing.sh ]; then
 	cp -r core/langport ${destination}/
 	accept_debug "done"	
 
+	wait_debug -n "Creating configuration file ... "
+	cp core/c0r3.cfg.default ${destination}/c0r3.cfg
+	accept_debug "done"
+
 	wait_debug -n "Copying the documentation files ... "
 	cp dependencies LICENSE README README.md ${destination}/
 	accept_debug "done"
