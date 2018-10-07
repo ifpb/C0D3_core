@@ -56,11 +56,11 @@ DEBUG=1
 OUTPUT_SIZE_LIMIT=$((1024*1024+1))
 CODE_SIZE_LIMIT=$((50*1024))
 SLEEP_TIME=5
-BASE_DIR=""
 DEFAULT_MEMORY_LIMIT=$((50*1024)) # in KB
 STEP_TIME=10
 COLOR_SCHEME=1
 
+BASE_DIR=""
 
 # This function finds the base directory for this script and goes to it!
 #
@@ -69,7 +69,7 @@ COLOR_SCHEME=1
 # is possible to write in there.
 function goto_base_dir()
 {
-	[ "${BASE_DIR}" = "" ] && BASE_DIR=$( dirname $0 )
+	BASE_DIR=$( dirname $0 )
 
 	cd ${BASE_DIR}
 
@@ -294,18 +294,18 @@ function information_debug()
 
 function read_config()
 {
-	if [ ! -r "/etc/c0r3.cfg" ]; then
-		error_debug "Configuration file '/etc/c0r3.cfg' not found. Using default values..."
+	config_file="c0r3.cfg"
+	if [ ! -r "${config_file}" ]; then
+		error_debug "Configuration file ${BASE_DIR}/${config_file} not found. Using default values..."
 	else
 		rm -rf /tmp/c0r3.cfg 2> /dev/null
-		cat /etc/c0r3.cfg | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
+		cat ${config_file} | sed -r 's/#.*$//g' | awk 'NF==2 {print $0}' > /tmp/c0r3.cfg
 		while read a b; do
 			case $a in
 				"DEBUG") DEBUG=${b} ;;
-				"OUTPUT_SIZE_LIMIT")= OUTPUT_SIZE_LIMIT=${b} ;;
-				"CODE_SIZE_LIMIT")= CODE_SIZE_LIMIT=${b} ;;
+				"OUTPUT_SIZE_LIMIT") OUTPUT_SIZE_LIMIT=${b} ;;
+				"CODE_SIZE_LIMIT") CODE_SIZE_LIMIT=${b} ;;
 				"SLEEP_TIME") SLEEP_TIME=${b};;
-				"BASE_DIR") BASE_DIR=${b};;
 				"STEP_TIME") STEP_TIME=${b};;
 				"DEFAULT_MEMORY_LIMIT") DEFAULT_MEMORY_LIMIT=${b};;
 				"COLOR_SCHEME") COLOR_SCHEME=${b};;
@@ -324,12 +324,11 @@ if [ $(id -u) -eq 0 ]; then
    exit 1
 fi
 
-# Checking the configuration file
-read_config
-
 # Going to BASE_DIR
 goto_base_dir
 
+# Checking the configuration file
+read_config
 
 # Importing functions related to compiling and execution of different
 # programming languages
