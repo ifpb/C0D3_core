@@ -94,7 +94,7 @@ function cpp_execut()
 		kill -0 ${sub_shell_pid} &> /dev/null
 		[ $? -ne 0 ] && break;
 		sleep ${step_time_in_seconds}
-		total_running_time=$((${total_running_time} + ${step_time}))
+		total_running_time=$((${total_running_time} + ${STEP_TIME}))
 	done
 
 	kill -9 ${sub_shell_pid} &> /dev/null

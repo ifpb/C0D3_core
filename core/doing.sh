@@ -336,6 +336,7 @@ read_config
 source ./langport/c_assets.sh
 source ./langport/cpp_assets.sh
 source ./langport/py2_assets.sh
+source ./langport/py3_assets.sh
 source ./langport/pas_assets.sh
 
 

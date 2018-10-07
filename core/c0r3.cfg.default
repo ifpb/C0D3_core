@@ -1,16 +1,24 @@
 # It is a comment
 # blank lines are ignored
 
+# 0 (no debug) 1 (debug)
 DEBUG 1
+
+# (time in seconds between each judge)
 SLEEP_TIME 2
+
+# 0 (no color) 1 (for black terminals)  or 2 (for white terminals)
 COLOR_SCHEME 1
+
+# Minimum running time (in miliseconds)
 STEP_TIME 10
 
-# 1024*1024+1
+# 1024*1024+1 B
 OUTPUT_SIZE_LIMIT 1048577
 
-# 50*1024
+# 50*1024 B
 CODE_SIZE_LIMIT 51200
 
 # 50*1024 kB
 DEFAULT_MEMORY_LIMIT 51200
+
