@@ -6,59 +6,80 @@ COLOR_SCHEME=1
 
 function error_debug()
 {
-        text=$1
-        if [ $COLOR_SCHEME -eq 0 ]; then
-                echo -e $text
-        else
-                echo -e "\e[01;31m$text\e[00m"
-        fi
+	opt=""
+	text=$1
+
+	if [ "$1" = "-n" ]; then
+		opt="-n"
+		text=$2
+	fi
+	
+	case $COLOR_SCHEME in
+		0) echo -e ${opt} "$text" ;;
+		*) echo -e ${opt} "\e[01;31m$text\e[00m" ;;
+	esac
 }
 
 function wait_debug()
 {
-        text=$1
-        if [ $COLOR_SCHEME -eq 1 ]; then
-                echo -e "\e[01;33m$text\e[00m"
+	opt=""
+	text=$1
 
-        elif [ $COLOR_SCHEME -eq 2 ]; then
-                echo -e "\e[01;35m$text\e[00m"
-        else
-                echo -e $text
-        fi
+	if [ "$1" = "-n" ]; then
+		opt="-n"
+		text=$2
+	fi
+	
+	case $COLOR_SCHEME in
+		1) echo -e ${opt} "\e[01;33m$text\e[00m" ;;
+		2) echo -e ${opt} "\e[01;35m$text\e[00m" ;;
+		*) echo -e ${opt} "$text" ;;
+	esac
 }
+
 function accept_debug()
 {
-        text=$1
-        if [ $COLOR_SCHEME -eq 1 ]; then
-                echo -e "\e[01;32m$text\e[00m"
+	opt=""
+	text=$1
 
-        elif [ $COLOR_SCHEME -eq 2 ]; then
-                echo -e "\e[01;34m$text\e[00m"
-        else
-                echo -e $text
-        fi
+	if [ "$1" = "-n" ]; then
+		opt="-n"
+		text=$2
+	fi
+	
+	case $COLOR_SCHEME in
+		1) echo -e ${opt} "\e[01;32m$text\e[00m" ;;
+		2) echo -e ${opt} "\e[01;34m$text\e[00m" ;;
+		*) echo -e ${opt} "$text" ;;
+	esac
 }
 
 function information_debug()
 {
-        text=$1
-        if [ $COLOR_SCHEME -eq 1 ]; then
-                echo -e "\e[01;34m$text\e[00m"
-        elif [ $COLOR_SCHEME -eq 2 ]; then
-                echo -e "\e[01;30m$text\e[00m"
-        else
-                echo -e $text
-        fi
+	opt=""
+	text=$1
+
+	if [ "$1" = "-n" ]; then
+		opt="-n"
+		text=$2
+	fi
+	
+	case $COLOR_SCHEME in
+		1) echo -e ${opt} "\e[01;34m$text\e[00m" ;;
+		2) echo -e ${opt} "\e[01;30m$text\e[00m" ;;
+		*) echo -e ${opt} "$text" ;;
+	esac
 }
 
 information_debug "Welcome to C0r3."
 information_debug ""
-information_debug "This script will install the c0r3 auto-judge in your computer"
+information_debug "This script will install the c0r3 auto-judge into your computer"
 information_debug ""
 
-cd basename
+cd $(dirname $0)
 
-read -e -p "Please enter the destination directory [/usr/c0r3]: " destination
+information_debug "Please enter the destination directory [/usr/c0r3]: "
+read destination
 
 # Default response
 [ -z "$destination" ] && destination="/usr/c0r3"
@@ -80,9 +101,13 @@ fi
 
 # Copying the necessary files
 if [ -e core/doing.sh ]; then
-	wait_debug -n "Copying the main files ... "
+	wait_debug -n "Copying the main file ... "
 	cp core/doing.sh ${destination}/
 	accept_debug "done"
+	
+	wait_debug -n "Copying langport files ... "
+	cp -r core/langport ${destination}/
+	accept_debug "done"	
 
 	wait_debug -n "Copying the documentation files ... "
 	cp dependencies LICENSE README README.md ${destination}/
@@ -98,5 +123,5 @@ else
 	error_debug "Error: Faild to copy the file 'doing.sh' to '$destination' directory. Exiting ..."
 fi
 
-accept_debug "Done"
+accept_debug "All done! Hope you enjoy it!"
 
