@@ -133,6 +133,12 @@ function judge()
 		return
 	fi
 
+	if [ ${execode} -eq 216 ]; then
+		echo -e "3\nRUNTIME_ERROR" > $pathj/result/judge.$ext
+		cd ${old_dir}
+		return
+	fi
+
 	if [ ${execode} -eq 139 ]; then
 		echo -e "3\nRUNTIME_ERROR" > $pathj/result/judge.$ext
 		cd ${old_dir}
