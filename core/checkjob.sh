@@ -57,7 +57,7 @@ fi
 # It returns the exit code 3 if there is no code file within the Job
 # directory.
 
-if [ `ls | grep code.* | wc -l` -eq 0 ]
+if [ `ls | grep code.* | wc -l` -eq 0 ] && [ `ls | grep Main.java | wc -l` -eq 0 ]
 then
 	cd ${old_dirjob}
 	echo "EXIT 3"
@@ -134,7 +134,7 @@ case $lang in
 		fi
 		;;
 	java)
-		if [ `ls | grep code.java | wc -l` -eq 0 ]
+		if [ `ls | grep Main.java | wc -l` -eq 0 ]
 		then
 			echo "EXIT 7"
 			exit 7

@@ -210,7 +210,7 @@ function general_judge()
 	esac
 
 	[ $DEBUG -eq 1 ] && accept_debug "Judge Result: $(cat judge | tr '\n' ' ')"
-	
+
 	cd ${old_dir}
 }
 
@@ -350,6 +350,7 @@ source ./langport/cpp_assets.sh
 source ./langport/py2_assets.sh
 source ./langport/py3_assets.sh
 source ./langport/pas_assets.sh
+source ./langport/java_assets.sh
 
 
 [ $DEBUG -eq 1 ] && wait_debug  "Starting the script..."
@@ -479,7 +480,7 @@ while :; do
 		${EXEC_FUNCTION} $i $path
 		execcode=$?
 
-		[ ${execcode} -eq 0 ] && differ $i $path 
+		[ ${execcode} -eq 0 ] && differ $i $path
 		judge $i $path ${execcode}
 	done
 
@@ -502,8 +503,7 @@ while :; do
 			while read val; do
 				echo -n "\"${val}\", " >> ${tmpfile}
 			done
-		} 
-		
+		}
 		echo " \"\" ]," >> ${tmpfile}
 	done
 
