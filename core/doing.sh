@@ -402,6 +402,8 @@ while :; do
 		5)	[ $DEBUG -eq 1 ] && error_debug "One, some or all of the input files and output files are not related..." ;;
 		6)	[ $DEBUG -eq 1 ] && error_debug "The language of the code is not supported by this core..." ;;
 		7)	[ $DEBUG -eq 1 ] && error_debug "The language indicated by the 'language' file and the extension of the code file doesn't match..." ;;
+		8)	[ $DEBUG -eq 1 ] && error_debug "The time limit provided within the Job directory is not between the valid interval.." ;;
+		9)	[ $DEBUG -eq 1 ] && error_debug "The memory limit value provided within the Job directory is not between the valid interval..." ;;
 		*)	[ $DEBUG -eq 1 ] && error_debug "Unknown return code D:|" ;;
 	esac
 
