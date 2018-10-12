@@ -174,7 +174,7 @@ esac
 # directory is between 10 milliseconds and 10000 milliseconds.
 # In negative case, it returns the exit code 8.
 
-if [ `cat meta/time_limit` -lt 10 ] || [ `cat meta/time_limit` -gt 10000 ]
+if [ `cat meta/time_limit` -lt 1000 ] || [ `cat meta/time_limit` -gt 20000 ]
 then
 	cd ${old_dirjob}
 	echo "EXIT 8"
@@ -188,7 +188,7 @@ fi
 # KiloBytes (100 MegaBytes).
 # In negative case, it returns the exit code 9.
 
-if [ `cat meta/memory_limit` -lt 10240 ] || [ `cat meta/memory_limit` -gt 102400 ]
+if [ `cat meta/memory_limit` -lt 102400 ] || [ `cat meta/memory_limit` -gt 1048576 ]
 then
 	cd ${old_dirjob}
 	echo "EXIT 9"
