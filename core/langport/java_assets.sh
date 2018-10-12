@@ -77,10 +77,11 @@ function java_execut()
 
 	(
 		#ulimit -v ${memory_limit}
+		memory_limit_mb=`echo "${memory_limit} / 1024" | bc`
 		echo ${BASHPID} > exec.pid;
 		{
 			echo "0" > result/retcode.$ext;
-			java Main < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
+			java -Xmx${memory_limit_mb}M Main < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
 			echo ${PIPESTATUS[0]} > result/retcode.$ext;
 		} 2> result/stderr.$ext
 	) 2> /dev/null &
