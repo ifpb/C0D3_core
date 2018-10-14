@@ -103,8 +103,14 @@ function java_execut()
 
 	execcode=$(cat result/retcode.$ext)
 
+    # Time Limit Error
 	if [ "${total_running_time}" -ge "${total_time_limit}" ]; then
 		execcode=255
+	fi
+
+    # Memory Error
+    if [ $(cat result/stderr.$ext | grep -c "java.lang.OutOfMemoryError") -ge 1 ]; then
+    	execcode=127
 	fi
 
 	echo ${total_running_time} > result/running_time.$ext
