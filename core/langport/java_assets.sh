@@ -76,7 +76,7 @@ function java_execut()
 	fi
 
 	(
-		#ulimit -v ${memory_limit}
+		ulimit -v $(( 2 * 1024 * 1024 ))
 		memory_limit_mb=`echo "${memory_limit} / 1024" | bc`
 		echo ${BASHPID} > exec.pid;
 		{

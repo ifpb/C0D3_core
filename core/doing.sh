@@ -326,6 +326,55 @@ function read_config()
 		rm -rf /tmp/c0r3.cfg 2> /dev/null
 	fi
 }
+
+
+function end_job()
+{
+	path_to_job=$1
+	final_judge=$2
+
+	# General Judging
+	if [ "$final_judge" = "GENERAL" ];
+	then
+		general_judge ${path_to_job}
+	else
+		mkdir DOING/${path_to_job}/result 2> /dev/null
+		echo -e ${final_judge} > DOING/${path_to_job}/result/judge
+		
+		[ $DEBUG -eq 1 ] && accept_debug "Judge Result: $(cat DOING/${path_to_job}/result/judge | tr '\n' ' ')"
+	fi
+
+	# Cleanning some things
+	rm DOING/${path_to_job}/a.out   2> /dev/null
+	rm DOING/${path_to_job}/a.py    2> /dev/null
+	rm DOING/${path_to_job}/a.class 2> /dev/null	
+
+	# Json Response
+	jrfile="DOING/${path_to_job}/result/result.json"
+	tmpfile=$(mktemp)
+
+	echo "{" > ${tmpfile}
+	for f in DOING/${path_to_job}/result/*; do
+		echo -n "  \"$(basename $f)\" : [" >> ${tmpfile}
+
+		head -2 ${f} | {
+			while read val; do
+				echo -n "\"${val}\", " >> ${tmpfile}
+			done
+		}
+		echo " \"\" ]," >> ${tmpfile}
+	done
+
+	echo "  \"end\":\"\"" >> ${tmpfile}
+	echo "}" >> ${tmpfile}
+
+	mv ${tmpfile} ${jrfile}
+
+	[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
+	mv DOING/${path_to_job} DONE/
+}
+
+
 # ----------------------------------------------------------------------
 # Main function of the script
 # ----------------------------------------------------------------------
@@ -415,11 +464,7 @@ while :; do
 	# Job Format error
 	if [ ${reschkjob} -ne 0 ]
 	then
-		mkdir DOING/$path/result 2> /dev/null
-		echo -e "9\nJOB SUBMISSION ERROR" > DOING/$path/result/judge
-
-		[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
-		mv DOING/$path DONE/
+		end_job $path "9\nJOB SUBMISSION ERROR"
 		continue
 	fi
 
@@ -458,20 +503,14 @@ while :; do
 	# Code size error
 	if [ ${retcode} -eq 255 ]
 	then
-		echo -e "8\nCODE SIZE LIMIT EXCEEDED" > DOING/$path/result/judge
-
-		[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
-		mv DOING/$path DONE/
+		end_job $path "8\nCODE SIZE LIMIT EXCEEDED"
 		continue
 	fi
 
 	# Compilation error
 	if [ ${retcode} -ne 0 ]
 	then
-		echo -e "7\nCOMPILATION ERROR" > DOING/$path/result/judge
-
-		[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
-		mv DOING/$path DONE/
+		end_job $path "7\nCOMPILATION ERROR"
 		continue
 	fi
 
@@ -488,36 +527,8 @@ while :; do
 
 
 	# General Judging
-	general_judge $path
-	rm DOING/$path/a.out   2> /dev/null
-	rm DOING/$path/a.py    2> /dev/null
-	rm DOING/$path/a.class 2> /dev/null
+	end_job $path "GENERAL"
 
-	# Json Response
-	jrfile="DOING/$path/result/result.json"
-	tmpfile=$(mktemp)
-
-	echo "{" > ${tmpfile}
-	for f in DOING/$path/result/*; do
-		echo -n "  \"$(basename $f)\" : [" >> ${tmpfile}
-
-		head -2 ${f} | {
-			while read val; do
-				echo -n "\"${val}\", " >> ${tmpfile}
-			done
-		}
-		echo " \"\" ]," >> ${tmpfile}
-	done
-
-	echo "  \"end\":\"\"" >> ${tmpfile}
-	echo "}" >> ${tmpfile}
-
-	mv ${tmpfile} ${jrfile}
-
-
-	# All done --------------------------------------------------------
-	[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
-	mv DOING/$path DONE/
 
 done
 
