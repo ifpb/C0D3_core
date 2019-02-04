@@ -340,14 +340,14 @@ function end_job()
 	else
 		mkdir DOING/${path_to_job}/result 2> /dev/null
 		echo -e ${final_judge} > DOING/${path_to_job}/result/judge
-		
+
 		[ $DEBUG -eq 1 ] && accept_debug "Judge Result: $(cat DOING/${path_to_job}/result/judge | tr '\n' ' ')"
 	fi
 
 	# Cleanning some things
 	rm DOING/${path_to_job}/a.out   2> /dev/null
 	rm DOING/${path_to_job}/a.py    2> /dev/null
-	rm DOING/${path_to_job}/a.class 2> /dev/null	
+	rm DOING/${path_to_job}/a.class 2> /dev/null
 
 	# Json Response
 	jrfile="DOING/${path_to_job}/result/result.json"

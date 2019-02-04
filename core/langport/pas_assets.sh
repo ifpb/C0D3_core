@@ -29,13 +29,13 @@ function pas_compile()
 	[ $DEBUG -eq 1 ] && information_debug "Code size=${code_size}"
 
 	if [ ${code_size} -gt ${CODE_SIZE_LIMIT} ]; then
-        cd ${old_dir}
-        return 255
-    fi
+        	cd ${old_dir}
+        	return 255
+	fi
 
-    fpc ${code_to_be_judged} -oa.out &> result/compile.out
-    returner=`echo $?`
-    echo ${returner} > result/compile.return
+	fpc ${code_to_be_judged} -oa.out &> result/compile.out
+	returner=`echo $?`
+	echo ${returner} > result/compile.return
 
 	cd ${old_dir}
 	return ${returner}
