@@ -65,7 +65,7 @@ BASE_DIR=""
 # This function finds the base directory for this script and goes to it!
 #
 # First it Checks the if the base directory is setted in the configuration file.
-# Then, it checks if the directoris JOBS, DOING and DONE exists and if it
+# Then, it checks if the directories JOBS, DOING and DONE exists and if it
 # is possible to write in there.
 function goto_base_dir()
 {
@@ -371,6 +371,7 @@ function end_job()
 	mv ${tmpfile} ${jrfile}
 
 	[ $DEBUG -eq 1 ] && wait_debug "Moving JOB to DONE folder"
+	wget `cat "DOING/${path_to_job}/meta/done_url"`
 	mv DOING/${path_to_job} DONE/
 }
 
@@ -402,7 +403,7 @@ source ./langport/pas_assets.sh
 source ./langport/java_assets.sh
 
 
-[ $DEBUG -eq 1 ] && wait_debug  "Starting the script..."
+[ $DEBUG -eq 1 ] && wait_debug "Starting the script..."
 
 
 # Main loop: look for new jobs every X sec
@@ -460,6 +461,7 @@ while :; do
 
 	# Moving the Job to the Working directory
 	mv JOBS/$path DOING/
+	wget `cat DOING/$path/meta/processing_url`
 
 	# Job Format error
 	if [ ${reschkjob} -ne 0 ]
