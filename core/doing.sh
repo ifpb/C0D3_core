@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # This runnable file checks if a new Job has arrived and automatically
 # move it to the 'DOING' directory.
