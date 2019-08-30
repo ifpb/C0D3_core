@@ -9,14 +9,14 @@
 # code of the execution of the same command. The function then return
 # this code too, indicating success or failure in compiling the code.
 
-function c_compile()
+function java_compile()
 {
 	pathc=$1
 	old_dir=$(pwd)
 	cd DOING/$pathc
 
 	# find the code_file on the folder
-	code_to_be_judged=( $(ls | grep *.c) )
+	code_to_be_judged=( $(ls | grep Main.java) )
 	code_to_be_judged=${code_to_be_judged[0]}
 
 	[ $DEBUG -eq 1 ] && wait_debug "code to be judged=${code_to_be_judged}"
@@ -33,7 +33,7 @@ function c_compile()
                 return 255
         fi
 
-        gcc ${code_to_be_judged} &> result/compile.out
+        javac ${code_to_be_judged} &> result/compile.out
         returner=`echo $?`
         echo ${returner} > result/compile.return
 	cd ${old_dir}
@@ -53,7 +53,7 @@ function c_compile()
 # of the test case. An example would be, when the input file is 'in.0',
 # the running time related file will be 'running_time.0'.
 
-function c_execut()
+function java_execut()
 {
 	arquivo=$1
 	pathe=$2
@@ -76,11 +76,12 @@ function c_execut()
 	fi
 
 	(
-		ulimit -v ${memory_limit}
+		ulimit -v $(( 2 * 1024 * 1024 ))
+		memory_limit_mb=`echo "${memory_limit} / 1024" | bc`
 		echo ${BASHPID} > exec.pid;
 		{
 			echo "0" > result/retcode.$ext;
-			./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
+			java -Xmx${memory_limit_mb}M Main < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
 			echo ${PIPESTATUS[0]} > result/retcode.$ext;
 		} 2> result/stderr.$ext
 	) 2> /dev/null &
@@ -102,8 +103,14 @@ function c_execut()
 
 	execcode=$(cat result/retcode.$ext)
 
+    # Time Limit Error
 	if [ "${total_running_time}" -ge "${total_time_limit}" ]; then
 		execcode=255
+	fi
+
+    # Memory Error
+    if [ $(cat result/stderr.$ext | grep -c "java.lang.OutOfMemoryError") -ge 1 ]; then
+    	execcode=127
 	fi
 
 	echo ${total_running_time} > result/running_time.$ext

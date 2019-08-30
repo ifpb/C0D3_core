@@ -1,14 +1,18 @@
 FROM debian
-MAINTAINER teste
-RUN groupadd testers
-RUN useradd teste
-RUN usermod -a -G testers teste
-COPY . /home/docker/teste
+MAINTAINER c0r3
+RUN useradd c0r3
+COPY . /c0r3
 RUN apt-get update
-RUN apt-get install -y gcc g++ bc python python3 fpc default-jre default-jdk
-RUN chown root:testers /home/docker/teste/JOBS
-RUN chown root:testers /home/docker/teste/DONE
-RUN chown root:testers /home/docker/teste/DOING
-RUN chmod 770 /home/docker/teste/DOING
-USER teste
-RUN /bin/bash
+RUN apt-get install -y gcc g++ apt-utils bc python python3 fpc default-jre default-jdk procps sudo wget
+RUN usermod -a -G sudo c0r3
+RUN chown root:sudo /c0r3/JOBS
+RUN chown root:sudo /c0r3/DONE
+RUN chown root:sudo /c0r3/DOING
+# VOLUME /c0r3/JOBS/:`pwd`/JOBS/
+# VOLUME /c0r3/DONE/:`pwd`/DONE/
+RUN chmod 770 /c0r3/JOBS
+RUN chmod 770 /c0r3/DOING
+RUN chmod 770 /c0r3/DONE
+USER c0r3
+ENTRYPOINT ["/bin/bash"]
+CMD ["/c0r3/checkcore.sh"]

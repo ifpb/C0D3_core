@@ -9,14 +9,14 @@
 # code of the execution of the same command. The function then return
 # this code too, indicating success or failure in compiling the code.
 
-function c_compile()
+function cpp_compile()
 {
 	pathc=$1
 	old_dir=$(pwd)
 	cd DOING/$pathc
 
 	# find the code_file on the folder
-	code_to_be_judged=( $(ls | grep *.c) )
+	code_to_be_judged=( $(ls | grep *.cpp) )
 	code_to_be_judged=${code_to_be_judged[0]}
 
 	[ $DEBUG -eq 1 ] && wait_debug "code to be judged=${code_to_be_judged}"
@@ -33,7 +33,7 @@ function c_compile()
                 return 255
         fi
 
-        gcc ${code_to_be_judged} &> result/compile.out
+        g++ ${code_to_be_judged} &> result/compile.out
         returner=`echo $?`
         echo ${returner} > result/compile.return
 	cd ${old_dir}
@@ -53,7 +53,7 @@ function c_compile()
 # of the test case. An example would be, when the input file is 'in.0',
 # the running time related file will be 'running_time.0'.
 
-function c_execut()
+function cpp_execut()
 {
 	arquivo=$1
 	pathe=$2

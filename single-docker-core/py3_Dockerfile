@@ -1,0 +1,12 @@
+FROM debian
+MAINTAINER c0r3
+COPY ./langport/py3_docker_assets.sh /c0r3
+RUN useradd c0r3
+RUN mkdir /c0r3
+RUN apt-get update
+RUN apt-get install -y python3 apt-utils bc procps sudo wget
+RUN usermod -a -G sudo c0r3
+RUN chown root:sudo /c0r3
+USER c0r3
+ENTRYPOINT ["/bin/bash"]
+CMD ["/c0r3/c_docker_assets.sh"]
