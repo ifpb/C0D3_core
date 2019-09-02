@@ -33,9 +33,12 @@ function cpp_compile()
                 return 255
         fi
 
-        g++ ${code_to_be_judged} &> result/compile.out
-        returner=`echo $?`
-        echo ${returner} > result/compile.return
+	pathdocker=`pwd`
+
+	docker run -v "${pathdocker}":/c0r3/Job --name cpp_compile1 cpp_compile
+	docker rm -f cpp_compile1
+
+        returner=`cat result/compile.return`
 	cd ${old_dir}
 	return ${returner}
 }
@@ -62,51 +65,23 @@ function cpp_execut()
 	ext=`echo ${arquivo} | cut -d. -f2`
 	cd DOING/$pathe
 
+	echo ${arquivo} > meta/ARQUIVO
+	echo ${pathe} > meta/PATH
+	echo $ext > meta/EXT
+	echo ${STEP_TIME} > meta/STEP_TIME
+	echo ${OUTPUT_SIZE_LIMIT} > meta/OUTPUT_SIZE_LIMIT
+	echo ${step_time_in_seconds} > meta/STEP_TIME_IN_SECONDS
+	echo ${DEFAULT_MEMORY_LIMIT} > meta/DEFAULT_MEMORY_LIMIT
+
 	[ $DEBUG -eq 1 ] && wait_debug "Exec phase: stdout > result/stdout.$ext and stderr > result/stderr.$ext"
 
-	# miliseconds
-	total_time_limit=`cat meta/time_limit`
-	step_time_in_seconds=`echo "scale=2; ${STEP_TIME} / 1000.0" | bc`
-	total_running_time=0
-	memory_limit=`cat meta/memory_limit`
+	pathdocker=`pwd`
 
-	if [ ${memory_limit} -gt ${DEFAULT_MEMORY_LIMIT} ]
-	then
-		memory_limit=${DEFAULT_MEMORY_LIMIT}
-	fi
+	docker run -v "${pathdocker}":/c0r3/Job --name cpp_execut1 cpp_execut
+	docker rm -f cpp_execut1
 
-	(
-		ulimit -v ${memory_limit}
-		echo ${BASHPID} > exec.pid;
-		{
-			echo "0" > result/retcode.$ext;
-			./a.out < ${arquivo} | head -c ${OUTPUT_SIZE_LIMIT} > result/stdout.$ext;
-			echo ${PIPESTATUS[0]} > result/retcode.$ext;
-		} 2> result/stderr.$ext
-	) 2> /dev/null &
-
-	sleep ${step_time_in_seconds}
-	sub_shell_pid=$(cat exec.pid)
-	rm exec.pid
-
-	while [ "${total_running_time}" -lt "${total_time_limit}" ]
-	do
-		kill -0 ${sub_shell_pid} &> /dev/null
-		[ $? -ne 0 ] && break;
-		sleep ${step_time_in_seconds}
-		total_running_time=$((${total_running_time} + ${STEP_TIME}))
-	done
-
-	kill -9 ${sub_shell_pid} &> /dev/null
-	wait ${sub_shell_pid} 2>/dev/null
-
-	execcode=$(cat result/retcode.$ext)
-
-	if [ "${total_running_time}" -ge "${total_time_limit}" ]; then
-		execcode=255
-	fi
-
-	echo ${total_running_time} > result/running_time.$ext
+	execcode=`cat result/execcodetemp`
+	rm result/execcodetemp
 
 	cd ${old_dir}
 	return ${execcode}

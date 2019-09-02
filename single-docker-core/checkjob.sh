@@ -103,6 +103,8 @@ then
 	rm exiter
 	cd ${old_dirjob}
 	exit 5
+else
+	rm exiter
 fi
 
 # This part of the code checks if the language is supported by the core

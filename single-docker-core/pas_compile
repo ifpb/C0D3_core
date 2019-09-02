@@ -1,0 +1,11 @@
+FROM debian
+MAINTAINER c0r3
+RUN mkdir -p /c0r3/Job/
+COPY ./langport/pas_docker_compile.sh /c0r3
+RUN useradd c0r3
+RUN apt-get update
+RUN apt-get install -y fpc
+RUN chown root:c0r3 /c0r3
+USER c0r3
+ENTRYPOINT ["/bin/bash"]
+CMD ["/c0r3/pas_docker_compile.sh"]
